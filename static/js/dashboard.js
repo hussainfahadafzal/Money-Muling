@@ -1,191 +1,187 @@
+/* ── RIFT 2026 Dashboard JS ── */
+/* Matches dashboard.html ID schema exactly */
 
+/* ── Color helpers ── */
+function nColor(s){ if(s>=75)return'#dc2626'; if(s>=40)return'#d97706'; if(s>0)return'#059669'; return'#94a3b8'; }
+function nBorder(s){ if(s>=75)return'#991b1b'; if(s>=40)return'#92400e'; if(s>0)return'#065f46'; return'#64748b'; }
+function nSize(s){ if(s>=75)return 30; if(s>=40)return 22; if(s>0)return 16; return 11; }
 
-function scoreColor(s) {
-  if (s >= 75) return '#f43f5e';
-  if (s >= 40) return '#f59e0b';
-  if (s >  0)  return '#10b981';
-  return '#374151';
+function pColor(p){
+  if(p.includes('cycle'))  return {c:'#2563eb',bg:'#eff6ff',bd:'#bfdbfe'};
+  if(p.includes('fan_in')) return {c:'#dc2626',bg:'#fef2f2',bd:'#fecaca'};
+  if(p.includes('fan_out'))return {c:'#ea580c',bg:'#fff7ed',bd:'#fed7aa'};
+  if(p.includes('layer'))  return {c:'#d97706',bg:'#fffbeb',bd:'#fde68a'};
+  if(p.includes('hub'))    return {c:'#7c3aed',bg:'#f5f3ff',bd:'#ddd6fe'};
+  return {c:'#64748b',bg:'#f8fafc',bd:'#e2e8f0'};
 }
 
-function scoreTierTag(s) {
-  if (s >= 75) return '<span class="tag tag-red">HIGH</span>';
-  if (s >= 40) return '<span class="tag tag-amber">MEDIUM</span>';
-  return '<span class="tag tag-green">LOW</span>';
+function rtColor(t){
+  if(t==='cycle')   return {c:'#2563eb',bg:'#eff6ff',bd:'#bfdbfe'};
+  if(t==='fan_in')  return {c:'#dc2626',bg:'#fef2f2',bd:'#fecaca'};
+  if(t==='fan_out') return {c:'#ea580c',bg:'#fff7ed',bd:'#fed7aa'};
+  if(t==='layering')return {c:'#d97706',bg:'#fffbeb',bd:'#fde68a'};
+  return {c:'#7c3aed',bg:'#f5f3ff',bd:'#ddd6fe'};
 }
 
-function patternColor(p) {
-  if (p.includes('cycle'))   return '#06b6d4';
-  if (p.includes('fan'))     return '#f43f5e';
-  if (p.includes('layer'))   return '#f59e0b';
-  if (p.includes('hub'))     return '#8b5cf6';
-  return '#475569';
-}
-
-// ── Load data ── 
+/* ── Load data ── */
 let DATA = null;
-try {
-  const raw = sessionStorage.getItem('riftResult');
-  if (raw) DATA = JSON.parse(raw);
-} catch (_) {}
+try { const r = sessionStorage.getItem('riftResult'); if(r) DATA = JSON.parse(r); } catch(_){}
 
-// ── Tab switching ── 
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(btn.dataset.tab).classList.add('active');
+/* ── Tab switching ── */
+document.querySelectorAll('.tab').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById(b.dataset.tab).classList.add('active');
   });
 });
 
 /* ── Filter chips ── */
-document.querySelectorAll('.filter-chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
-    if (DATA) renderRingsTable(DATA.fraud_rings, chip.dataset.filter);
+document.querySelectorAll('.fchip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.fchip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    if(DATA) renderRings(DATA.fraud_rings, c.dataset.filter);
   });
 });
 
-// ── Graph toolbar ── 
+/* ── Cytoscape ref ── */
 let cy = null;
 
-document.getElementById('btn-fit').addEventListener('click', () => cy && cy.fit(undefined, 40));
-
-document.getElementById('btn-all').addEventListener('click', () => {
-  if (!cy) return;
-  cy.elements().style('display', 'element');
-});
-
-document.getElementById('btn-suspicious').addEventListener('click', () => {
-  if (!cy) return;
-  cy.nodes().forEach(n => n.style('display', n.data('suspicious') ? 'element' : 'none'));
-  cy.edges().forEach(e => {
-    const show = e.source().style('display') === 'element' && e.target().style('display') === 'element';
-    e.style('display', show ? 'element' : 'none');
+/* ── Toolbar ── */
+document.getElementById('btn-fit').onclick   = () => cy && cy.fit(undefined, 48);
+document.getElementById('btn-all').onclick   = () => { if(!cy) return; cy.elements().style('display','element'); cy.fit(undefined,48); };
+document.getElementById('btn-sus2').onclick  = () => {
+  if(!cy) return;
+  cy.batch(() => {
+    cy.nodes().forEach(n => n.style('display', n.data('suspicious') ? 'element' : 'none'));
+    cy.edges().forEach(e => e.style('display',
+      e.source().style('display')==='element' && e.target().style('display')==='element' ? 'element' : 'none'));
   });
+  setTimeout(() => cy.fit(cy.nodes(':visible'), 48), 30);
+};
+document.getElementById('btn-rings').onclick = () => {
+  if(!cy) return;
+  cy.batch(() => {
+    cy.nodes().forEach(n => n.style('display', n.data('in_ring') ? 'element' : 'none'));
+    cy.edges().forEach(e => e.style('display',
+      e.source().style('display')==='element' && e.target().style('display')==='element' ? 'element' : 'none'));
+  });
+  setTimeout(() => cy.fit(cy.nodes(':visible'), 48), 30);
+};
+
+/* ── Search ── */
+document.getElementById('g-search-input').addEventListener('input', e => {
+  if(!cy) return;
+  const q = e.target.value.trim().toLowerCase();
+  if(!q){ cy.elements().style('display','element'); return; }
+  cy.batch(() => {
+    cy.nodes().forEach(n => n.style('display', n.data('id').toLowerCase().includes(q) ? 'element' : 'none'));
+    cy.edges().forEach(e => e.style('display',
+      e.source().style('display')==='element' && e.target().style('display')==='element' ? 'element' : 'none'));
+  });
+  const vis = cy.nodes(':visible');
+  if(vis.length === 1){ cy.animate({fit:{eles:vis,padding:120}},{duration:350}); showDetail(vis.first().data()); }
 });
 
-// ── Download ── 
-document.getElementById('btn-download').addEventListener('click', () => {
-  if (!DATA) return;
+/* ── Download ── */
+document.getElementById('btn-dl').onclick = () => {
+  if(!DATA) return;
   const blob = new Blob([JSON.stringify({
     suspicious_accounts: DATA.suspicious_accounts,
-    fraud_rings:         DATA.fraud_rings,
-    summary:             DATA.summary,
-  }, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'fraud_report.json';
-  a.click();
-});
+    fraud_rings: DATA.fraud_rings,
+    summary: DATA.summary,
+  }, null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'rift_fraud_report.json'; a.click();
+};
 
-// ── Main render ──
-if (DATA) {
-  document.getElementById('graph-empty').style.display = 'none';
-  renderAll(DATA);
-}
+/* ── Main render ── */
+if(DATA){ document.getElementById('g-empty').style.display = 'none'; renderAll(DATA); }
 
 function renderAll(d) {
   const s = d.summary;
 
-  // Topbar meta 
-  document.getElementById('tb-accounts').textContent = s.total_accounts_analyzed;
-  document.getElementById('tb-txns').textContent     = s.total_transactions;
-  document.getElementById('tb-rings').textContent    = s.fraud_rings_detected;
-  document.getElementById('tb-time').textContent     = s.processing_time_seconds + 's';
+  /* Topbar pills */
+  document.getElementById('tb-acc').textContent = s.total_accounts_analyzed;
+  document.getElementById('tb-txn').textContent = s.total_transactions;
+  document.getElementById('tb-sus').textContent = s.suspicious_accounts_flagged;
+  document.getElementById('tb-rng').textContent = s.fraud_rings_detected;
+  document.getElementById('tb-tim').textContent = s.processing_time_seconds;
 
-  // Mini stats 
-  document.getElementById('ms-flagged').textContent  = s.suspicious_accounts_flagged;
-  document.getElementById('ms-rings').textContent    = s.fraud_rings_detected;
-  document.getElementById('ms-accounts').textContent = s.total_accounts_analyzed;
-  document.getElementById('ms-time').textContent     = s.processing_time_seconds;
+  /* Sidebar stat cards */
+  document.getElementById('sc-sus').textContent = s.suspicious_accounts_flagged;
+  document.getElementById('sc-rng').textContent = s.fraud_rings_detected;
+  document.getElementById('sc-acc').textContent = s.total_accounts_analyzed;
+  document.getElementById('sc-txn').textContent = s.total_transactions;
 
-  // Breakdown bars 
-  const maxR = Math.max(s.cycle_rings, s.smurfing_rings, s.layering_rings, s.hub_nodes, 1);
-  [
-    ['br-cycle',  s.cycle_rings,    '#06b6d4'],
-    ['br-smurf',  s.smurfing_rings, '#f43f5e'],
-    ['br-layer',  s.layering_rings, '#f59e0b'],
-    ['br-hub',    s.hub_nodes,      '#8b5cf6'],
-  ].forEach(([id, val, color]) => {
-    const el = document.getElementById(id);
-    if (el) { el.style.width = (val / maxR * 100) + '%'; el.style.background = color; }
-    const cnt = document.getElementById(id.replace('br-', 'cnt-'));
-    if (cnt) cnt.textContent = val;
+  /* Ring breakdown bars */
+  const mx = Math.max(s.cycle_rings, s.smurfing_rings, s.layering_rings, s.hub_nodes, 1);
+  [['bf-c','bv-c',s.cycle_rings], ['bf-s','bv-s',s.smurfing_rings],
+   ['bf-l','bv-l',s.layering_rings], ['bf-h','bv-h',s.hub_nodes]].forEach(([b,v,n]) => {
+    document.getElementById(b).style.width = (n / mx * 100) + '%';
+    document.getElementById(v).textContent = n;
   });
 
-  // Account list
+  /* Account list */
   const list = document.getElementById('acct-list');
   list.innerHTML = '';
-  const top = d.suspicious_accounts.slice(0, 25);
-  if (top.length === 0) {
-    list.innerHTML = '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:8px 0">No suspicious accounts detected.</div>';
-  }
+  const top = d.suspicious_accounts.slice(0, 30);
+  if(!top.length){ list.innerHTML = '<div style="font-size:11px;color:var(--text3)">None detected.</div>'; }
   top.forEach(a => {
     const row = document.createElement('div');
-    row.className = 'acct-row';
-    row.dataset.id = a.account_id;
-    row.innerHTML = `
-      <span class="acct-id">${a.account_id}</span>
-      ${scoreTierTag(a.suspicion_score)}
-    `;
+    row.className = 'ar'; row.dataset.id = a.account_id;
+    row.innerHTML = `<span class="ar-id">${a.account_id}</span>
+                     <span class="ar-score" style="color:${nColor(a.suspicion_score)}">${a.suspicion_score.toFixed(0)}</span>`;
     row.addEventListener('click', () => focusNode(a.account_id));
     list.appendChild(row);
   });
 
-  // Rings table 
-  renderRingsTable(d.fraud_rings, 'all');
-
-  //    Graph 
+  renderRings(d.fraud_rings, 'all');
   renderGraph(d.graph, d.suspicious_accounts);
 }
 
-// ── Rings Table ──
-function renderRingsTable(rings, filter) {
-  const tbody = document.getElementById('rings-tbody');
-  const filtered = filter === 'all' ? rings : rings.filter(r => r.pattern_type === filter);
-
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text3)">No rings match this filter.</td></tr>`;
+/* ── Rings list ── */
+function renderRings(rings, filter) {
+  const list = document.getElementById('rings-list');
+  const f = filter === 'all' ? rings : rings.filter(r => r.pattern_type.includes(filter));
+  if(!f.length){
+    list.innerHTML = '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:20px;text-align:center">No rings.</div>';
     return;
   }
-
-  tbody.innerHTML = filtered.map(r => `
-    <tr>
-      <td class="ring-id-cell">${r.ring_id}</td>
-      <td><span class="tag tag-cyan" style="font-size:9px">${r.pattern_type}</span></td>
-      <td style="color:var(--text)">${r.member_accounts.length}</td>
-      <td>${scoreTierTag(r.risk_score)}</td>
-    </tr>
-  `).join('');
+  list.innerHTML = f.map(r => {
+    const ts = rtColor(r.pattern_type);
+    const sc = nColor(r.risk_score);
+    return `<div class="ring-card" onclick="hlRing(${JSON.stringify(r.member_accounts)})">
+      <div class="rc-top"><span class="rc-id">${r.ring_id}</span><span class="rc-score" style="color:${sc}">${r.risk_score.toFixed(1)}</span></div>
+      <div class="rc-bot">
+        <span class="rc-type" style="color:${ts.c};background:${ts.bg};border-color:${ts.bd}">${r.pattern_type}</span>
+        <span class="rc-members">${r.member_accounts.length} members</span>
+      </div>
+      <div class="rc-bar-track"><div class="rc-bar-fill" style="width:${r.risk_score}%;background:${sc}"></div></div>
+    </div>`;
+  }).join('');
 }
 
-// ── Cytoscape Graph ── 
-function renderGraph(graphData, suspicious) {
-  const suspMap = {};
-  suspicious.forEach(a => { suspMap[a.account_id] = a; });
+/* ── Graph ── */
+function renderGraph(gd, sus) {
+  const sm = {}; sus.forEach(a => { sm[a.account_id] = a.suspicion_score; });
 
-  // Cap nodes for performance 
-  const nodes = graphData.nodes.slice(0, 600).map(n => ({
-    data: {
-      id: n.id,
-      score: suspMap[n.id] ? suspMap[n.id].suspicion_score : (n.score || 0),
-      suspicious: n.suspicious,
-      in_ring:    n.in_ring,
-      in_degree:  n.in_degree,
-      out_degree: n.out_degree,
-      patterns:   n.patterns || [],
-    }
+  const nodes = gd.nodes.slice(0, 700).map(n => ({
+    data: { id: n.id, score: sm[n.id] ?? (n.score || 0),
+            suspicious: n.suspicious, in_ring: n.in_ring,
+            in_degree: n.in_degree, out_degree: n.out_degree, patterns: n.patterns || [] }
   }));
 
-  const nodeSet = new Set(nodes.map(n => n.data.id));
-  const edges = graphData.edges
-    .filter(e => nodeSet.has(e.source) && nodeSet.has(e.target))
+  const ns = new Set(nodes.map(n => n.data.id));
+  const edges = gd.edges
+    .filter(e => ns.has(e.source) && ns.has(e.target))
     .slice(0, 2000)
-    .map(e => ({
-      data: { id: `${e.source}__${e.target}`, source: e.source, target: e.target, weight: e.weight }
-    }));
+    .map(e => ({ data: { id:`${e.source}__${e.target}`, source:e.source, target:e.target } }));
+
+  document.getElementById('g-n').textContent = nodes.length;
+  document.getElementById('g-e').textContent = edges.length;
 
   cy = cytoscape({
     container: document.getElementById('cy'),
@@ -194,413 +190,119 @@ function renderGraph(graphData, suspicious) {
       {
         selector: 'node',
         style: {
-          'background-color': n => scoreColor(n.data('score')),
-          'border-color':     n => n.data('in_ring') ? '#ffffff' : 'transparent',
-          'border-width':     n => n.data('in_ring') ? 2 : 0,
-          width:  n => n.data('score') >= 75 ? 30 : n.data('score') >= 40 ? 20 : 11,
-          height: n => n.data('score') >= 75 ? 30 : n.data('score') >= 40 ? 20 : 11,
+          'background-color': n => nColor(n.data('score')),
+          'border-width':     n => n.data('in_ring') ? 3 : 1,
+          'border-color':     n => n.data('in_ring') ? '#2563eb' : nBorder(n.data('score')),
+          width:  n => nSize(n.data('score')),
+          height: n => nSize(n.data('score')),
           label:  n => n.data('suspicious') ? n.data('id') : '',
-          'font-family': 'JetBrains Mono',
-          'font-size': '8px',
-          color: '#f1f5f9',
-          'text-valign': 'bottom',
-          'text-margin-y': 5,
-          'text-outline-width': 2,
-          'text-outline-color': '#04060f',
-          'min-zoomed-font-size': 5,
+          'font-family': '"JetBrains Mono", monospace',
+          'font-size': '9px', 'font-weight': 600,
+          color: '#1e293b',
+          'text-valign': 'bottom', 'text-halign': 'center', 'text-margin-y': 5,
+          'text-outline-width': 2, 'text-outline-color': '#f8fafc',
+          'min-zoomed-font-size': 6,
         }
       },
       {
         selector: 'edge',
         style: {
           'curve-style': 'bezier',
+          'line-color': '#475569',
           'target-arrow-shape': 'triangle',
-          'target-arrow-color': '#1a2235',
-          'line-color': '#1a2235',
-          width: 1, opacity: 0.55,
+          'target-arrow-color': '#475569',
+          'arrow-scale': 0.85,
+          width: 1.5, opacity: 0.55,
         }
       },
-      {
-        selector: 'node:selected',
-        style: { 'border-color': '#06b6d4', 'border-width': 3 }
-      },
+      { selector: 'node:selected', style: { 'border-width':3, 'border-color':'#2563eb', 'overlay-color':'#2563eb', 'overlay-padding':4, 'overlay-opacity':0.1 } },
+      { selector: '.hl-edge',  style: { 'line-color':'#2563eb', 'target-arrow-color':'#2563eb', width:2.5, opacity:1, 'z-index':10 } },
+      { selector: '.ring-edge',style: { 'line-color':'#dc2626', 'target-arrow-color':'#dc2626', width:3,   opacity:1, 'z-index':10 } },
+      { selector: '.dim',      style: { opacity: 0.1 } },
     ],
-    layout: {
-      name: 'cose',
-      animate: false,
-      nodeRepulsion: 4500,
-      idealEdgeLength: 90,
-      gravity: 0.25,
-      numIter: 500,
-    }
+    layout: { name:'cose', animate:false, nodeRepulsion:5000, idealEdgeLength:90, gravity:0.25, numIter:600, randomize:true },
+    wheelSensitivity: 0.25, minZoom: 0.05, maxZoom: 10,
   });
 
-  // Node click → detail panel 
   cy.on('tap', 'node', evt => {
-    showNodeDetail(evt.target.data());
-    highlightListItem(evt.target.data('id'));
+    const n = evt.target;
+    showDetail(n.data()); dimExcept(n); setRow(n.data('id'));
+    document.querySelector('[data-tab="t-node"]').click();
   });
-
-  // Background click → clear detail 
   cy.on('tap', evt => {
-    if (evt.target === cy) clearNodeDetail();
+    if(evt.target !== cy) return;
+    cy.elements().removeClass('dim hl-edge ring-edge');
+    clearDetail();
+    document.querySelectorAll('.ar').forEach(r => r.classList.remove('active'));
   });
 }
 
-// ── Focus a node programmatically ── 
-function focusNode(id) {
-  if (!cy) return;
-  const node = cy.getElementById(id);
-  if (node.length) {
-    cy.animate({ fit: { eles: node, padding: 100 } }, { duration: 400 });
-    node.select();
-    showNodeDetail(node.data());
-    highlightListItem(id);
-    // Switch to node detail tab 
-    document.querySelector('[data-tab="tab-node"]').click();
-  }
+function dimExcept(node){
+  cy.elements().removeClass('dim hl-edge ring-edge');
+  cy.elements().not(node.neighborhood().add(node)).addClass('dim');
+  node.connectedEdges().addClass('hl-edge');
 }
 
-function highlightListItem(id) {
-  document.querySelectorAll('.acct-row').forEach(r => {
-    r.classList.toggle('selected', r.dataset.id === id);
-  });
+function focusNode(id){
+  if(!cy) return;
+  const n = cy.getElementById(id);
+  if(!n.length) return;
+  cy.elements().style('display','element');
+  cy.animate({fit:{eles:n.neighborhood().add(n),padding:80}},{duration:350});
+  n.select(); showDetail(n.data()); dimExcept(n); setRow(id);
+  document.querySelector('[data-tab="t-node"]').click();
 }
 
-// ── Node Detail ── 
-function showNodeDetail(data) {
-  document.getElementById('nd-empty').style.display   = 'none';
-  document.getElementById('nd-content').style.display = 'block';
-
-  document.getElementById('nd-id').textContent    = data.id;
-  document.getElementById('nd-score-val').textContent = data.score.toFixed(1);
-  document.getElementById('nd-score-val').style.color = scoreColor(data.score);
-
-  const ring = document.getElementById('nd-ring');
-  ring.style.borderColor = scoreColor(data.score);
-
-  document.getElementById('nd-in').textContent  = data.in_degree;
-  document.getElementById('nd-out').textContent = data.out_degree;
-
-  const tierEl = document.getElementById('nd-tier');
-  tierEl.innerHTML = scoreTierTag(data.score);
-
-  const pats = document.getElementById('nd-patterns');
-  pats.innerHTML = '';
-  (data.patterns || []).forEach(p => {
-    const c = patternColor(p);
-    pats.innerHTML += `<span class="tag" style="background:${c}18;color:${c};border:1px solid ${c}33;font-size:10px">${p}</span>`;
-  });
-  if (!data.patterns || data.patterns.length === 0) {
-    pats.innerHTML = '<span style="font-family:var(--mono);font-size:10px;color:var(--text3)">No patterns detected</span>';
-  }
-}
-
-function clearNodeDetail() {
-  document.getElementById('nd-empty').style.display   = 'flex';
-  document.getElementById('nd-content').style.display = 'none';
-  document.querySelectorAll('.acct-row').forEach(r => r.classList.remove('selected'));
-
-
-function scoreColor(s) {
-  if (s >= 75) return '#f43f5e';
-  if (s >= 40) return '#f59e0b';
-  if (s >  0)  return '#10b981';
-  return '#374151';
-}
-
-function scoreTierTag(s) {
-  if (s >= 75) return '<span class="tag tag-red">HIGH</span>';
-  if (s >= 40) return '<span class="tag tag-amber">MEDIUM</span>';
-  return '<span class="tag tag-green">LOW</span>';
-}
-
-function patternColor(p) {
-  if (p.includes('cycle'))   return '#06b6d4';
-  if (p.includes('fan'))     return '#f43f5e';
-  if (p.includes('layer'))   return '#f59e0b';
-  if (p.includes('hub'))     return '#8b5cf6';
-  return '#475569';
-}
-
-// ── Load data ── 
-let DATA = null;
-try {
-  const raw = sessionStorage.getItem('riftResult');
-  if (raw) DATA = JSON.parse(raw);
-} catch (_) {}
-
-// ── Tab switching ── 
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(btn.dataset.tab).classList.add('active');
-  });
-});
-
-/* ── Filter chips ── */
-document.querySelectorAll('.filter-chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
-    if (DATA) renderRingsTable(DATA.fraud_rings, chip.dataset.filter);
-  });
-});
-
-// ── Graph toolbar ── 
-let cy = null;
-
-document.getElementById('btn-fit').addEventListener('click', () => cy && cy.fit(undefined, 40));
-
-document.getElementById('btn-all').addEventListener('click', () => {
-  if (!cy) return;
-  cy.elements().style('display', 'element');
-});
-
-document.getElementById('btn-suspicious').addEventListener('click', () => {
-  if (!cy) return;
-  cy.nodes().forEach(n => n.style('display', n.data('suspicious') ? 'element' : 'none'));
+function hlRing(members){
+  if(!cy) return;
+  cy.elements().style('display','element');
+  cy.elements().removeClass('dim hl-edge ring-edge');
+  const ms = new Set(members.map(String));
+  cy.nodes().forEach(n => { if(!ms.has(String(n.data('id')))) n.addClass('dim'); });
   cy.edges().forEach(e => {
-    const show = e.source().style('display') === 'element' && e.target().style('display') === 'element';
-    e.style('display', show ? 'element' : 'none');
+    const si = ms.has(String(e.source().data('id'))), di = ms.has(String(e.target().data('id')));
+    if(si && di) e.addClass('ring-edge'); else e.addClass('dim');
   });
-});
-
-// ── Download ── 
-document.getElementById('btn-download').addEventListener('click', () => {
-  if (!DATA) return;
-  const blob = new Blob([JSON.stringify({
-    suspicious_accounts: DATA.suspicious_accounts,
-    fraud_rings:         DATA.fraud_rings,
-    summary:             DATA.summary,
-  }, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'fraud_report.json';
-  a.click();
-});
-
-// ── Main render ──
-if (DATA) {
-  document.getElementById('graph-empty').style.display = 'none';
-  renderAll(DATA);
+  const vis = cy.nodes().filter(n => !n.hasClass('dim'));
+  if(vis.length) cy.animate({fit:{eles:vis,padding:80}},{duration:350});
 }
 
-function renderAll(d) {
-  const s = d.summary;
-
-  // Topbar meta 
-  document.getElementById('tb-accounts').textContent = s.total_accounts_analyzed;
-  document.getElementById('tb-txns').textContent     = s.total_transactions;
-  document.getElementById('tb-rings').textContent    = s.fraud_rings_detected;
-  document.getElementById('tb-time').textContent     = s.processing_time_seconds + 's';
-
-  // Mini stats 
-  document.getElementById('ms-flagged').textContent  = s.suspicious_accounts_flagged;
-  document.getElementById('ms-rings').textContent    = s.fraud_rings_detected;
-  document.getElementById('ms-accounts').textContent = s.total_accounts_analyzed;
-  document.getElementById('ms-time').textContent     = s.processing_time_seconds;
-
-  // Breakdown bars 
-  const maxR = Math.max(s.cycle_rings, s.smurfing_rings, s.layering_rings, s.hub_nodes, 1);
-  [
-    ['br-cycle',  s.cycle_rings,    '#06b6d4'],
-    ['br-smurf',  s.smurfing_rings, '#f43f5e'],
-    ['br-layer',  s.layering_rings, '#f59e0b'],
-    ['br-hub',    s.hub_nodes,      '#8b5cf6'],
-  ].forEach(([id, val, color]) => {
-    const el = document.getElementById(id);
-    if (el) { el.style.width = (val / maxR * 100) + '%'; el.style.background = color; }
-    const cnt = document.getElementById(id.replace('br-', 'cnt-'));
-    if (cnt) cnt.textContent = val;
-  });
-
-  // Account list
-  const list = document.getElementById('acct-list');
-  list.innerHTML = '';
-  const top = d.suspicious_accounts.slice(0, 25);
-  if (top.length === 0) {
-    list.innerHTML = '<div style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:8px 0">No suspicious accounts detected.</div>';
-  }
-  top.forEach(a => {
-    const row = document.createElement('div');
-    row.className = 'acct-row';
-    row.dataset.id = a.account_id;
-    row.innerHTML = `
-      <span class="acct-id">${a.account_id}</span>
-      ${scoreTierTag(a.suspicion_score)}
-    `;
-    row.addEventListener('click', () => focusNode(a.account_id));
-    list.appendChild(row);
-  });
-
-  // Rings table 
-  renderRingsTable(d.fraud_rings, 'all');
-
-  //    Graph 
-  renderGraph(d.graph, d.suspicious_accounts);
+function setRow(id){
+  document.querySelectorAll('.ar').forEach(r => r.classList.toggle('active', r.dataset.id === id));
+  const el = document.querySelector(`.ar[data-id="${id}"]`);
+  if(el) el.scrollIntoView({block:'nearest'});
 }
 
-// ── Rings Table ──
-function renderRingsTable(rings, filter) {
-  const tbody = document.getElementById('rings-tbody');
-  const filtered = filter === 'all' ? rings : rings.filter(r => r.pattern_type === filter);
+function showDetail(data){
+  document.getElementById('nd-empty').style.display = 'none';
+  document.getElementById('nd-detail').classList.add('show');
 
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text3)">No rings match this filter.</td></tr>`;
-    return;
-  }
+  const s = data.score || 0;
+  const C = 175.9, arc = document.getElementById('d-arc');
+  arc.style.strokeDashoffset = C - (s / 100) * C;
+  arc.style.stroke = nColor(s);
+  document.getElementById('d-score').textContent = s.toFixed(1);
+  document.getElementById('d-score').style.color = nColor(s);
+  document.getElementById('d-id').textContent    = data.id;
+  document.getElementById('d-in').textContent    = data.in_degree;
+  document.getElementById('d-out').textContent   = data.out_degree;
+  document.getElementById('d-tot').textContent   = data.in_degree + data.out_degree;
+  document.getElementById('d-ring').textContent  = data.in_ring ? '✓ Yes' : 'No';
 
-  tbody.innerHTML = filtered.map(r => `
-    <tr>
-      <td class="ring-id-cell">${r.ring_id}</td>
-      <td><span class="tag tag-cyan" style="font-size:9px">${r.pattern_type}</span></td>
-      <td style="color:var(--text)">${r.member_accounts.length}</td>
-      <td>${scoreTierTag(r.risk_score)}</td>
-    </tr>
-  `).join('');
-}
+  const rs = document.getElementById('d-risk');
+  rs.className = 'nd-risk ' + (s>=75 ? 'risk-h' : s>=40 ? 'risk-m' : 'risk-l');
+  rs.textContent = s>=75 ? '🔴  HIGH RISK' : s>=40 ? '🟡  MEDIUM RISK' : '🟢  LOW RISK';
 
-// ── Cytoscape Graph ── 
-function renderGraph(graphData, suspicious) {
-  const suspMap = {};
-  suspicious.forEach(a => { suspMap[a.account_id] = a; });
-
-  // Cap nodes for performance 
-  const nodes = graphData.nodes.slice(0, 600).map(n => ({
-    data: {
-      id: n.id,
-      score: suspMap[n.id] ? suspMap[n.id].suspicion_score : (n.score || 0),
-      suspicious: n.suspicious,
-      in_ring:    n.in_ring,
-      in_degree:  n.in_degree,
-      out_degree: n.out_degree,
-      patterns:   n.patterns || [],
-    }
-  }));
-
-  const nodeSet = new Set(nodes.map(n => n.data.id));
-  const edges = graphData.edges
-    .filter(e => nodeSet.has(e.source) && nodeSet.has(e.target))
-    .slice(0, 2000)
-    .map(e => ({
-      data: { id: `${e.source}__${e.target}`, source: e.source, target: e.target, weight: e.weight }
-    }));
-
-  cy = cytoscape({
-    container: document.getElementById('cy'),
-    elements: { nodes, edges },
-    style: [
-      {
-        selector: 'node',
-        style: {
-          'background-color': n => scoreColor(n.data('score')),
-          'border-color':     n => n.data('in_ring') ? '#ffffff' : 'transparent',
-          'border-width':     n => n.data('in_ring') ? 2 : 0,
-          width:  n => n.data('score') >= 75 ? 30 : n.data('score') >= 40 ? 20 : 11,
-          height: n => n.data('score') >= 75 ? 30 : n.data('score') >= 40 ? 20 : 11,
-          label:  n => n.data('suspicious') ? n.data('id') : '',
-          'font-family': 'JetBrains Mono',
-          'font-size': '8px',
-          color: '#f1f5f9',
-          'text-valign': 'bottom',
-          'text-margin-y': 5,
-          'text-outline-width': 2,
-          'text-outline-color': '#04060f',
-          'min-zoomed-font-size': 5,
-        }
-      },
-      {
-        selector: 'edge',
-        style: {
-          'curve-style': 'bezier',
-          'target-arrow-shape': 'triangle',
-          'target-arrow-color': '#1a2235',
-          'line-color': '#1a2235',
-          width: 1, opacity: 0.55,
-        }
-      },
-      {
-        selector: 'node:selected',
-        style: { 'border-color': '#06b6d4', 'border-width': 3 }
-      },
-    ],
-    layout: {
-      name: 'cose',
-      animate: false,
-      nodeRepulsion: 4500,
-      idealEdgeLength: 90,
-      gravity: 0.25,
-      numIter: 500,
-    }
-  });
-
-  // Node click → detail panel 
-  cy.on('tap', 'node', evt => {
-    showNodeDetail(evt.target.data());
-    highlightListItem(evt.target.data('id'));
-  });
-
-  // Background click → clear detail 
-  cy.on('tap', evt => {
-    if (evt.target === cy) clearNodeDetail();
-  });
-}
-
-// ── Focus a node programmatically ── 
-function focusNode(id) {
-  if (!cy) return;
-  const node = cy.getElementById(id);
-  if (node.length) {
-    cy.animate({ fit: { eles: node, padding: 100 } }, { duration: 400 });
-    node.select();
-    showNodeDetail(node.data());
-    highlightListItem(id);
-    // Switch to node detail tab 
-    document.querySelector('[data-tab="tab-node"]').click();
-  }
-}
-
-function highlightListItem(id) {
-  document.querySelectorAll('.acct-row').forEach(r => {
-    r.classList.toggle('selected', r.dataset.id === id);
-  });
-}
-
-// ── Node Detail ── 
-function showNodeDetail(data) {
-  document.getElementById('nd-empty').style.display   = 'none';
-  document.getElementById('nd-content').style.display = 'block';
-
-  document.getElementById('nd-id').textContent    = data.id;
-  document.getElementById('nd-score-val').textContent = data.score.toFixed(1);
-  document.getElementById('nd-score-val').style.color = scoreColor(data.score);
-
-  const ring = document.getElementById('nd-ring');
-  ring.style.borderColor = scoreColor(data.score);
-
-  document.getElementById('nd-in').textContent  = data.in_degree;
-  document.getElementById('nd-out').textContent = data.out_degree;
-
-  const tierEl = document.getElementById('nd-tier');
-  tierEl.innerHTML = scoreTierTag(data.score);
-
-  const pats = document.getElementById('nd-patterns');
-  pats.innerHTML = '';
+  const pc = document.getElementById('d-pats');
+  pc.innerHTML = '';
   (data.patterns || []).forEach(p => {
-    const c = patternColor(p);
-    pats.innerHTML += `<span class="tag" style="background:${c}18;color:${c};border:1px solid ${c}33;font-size:10px">${p}</span>`;
+    const {c,bg,bd} = pColor(p);
+    pc.innerHTML += `<span class="pc" style="color:${c};background:${bg};border-color:${bd}">${p}</span>`;
   });
-  if (!data.patterns || data.patterns.length === 0) {
-    pats.innerHTML = '<span style="font-family:var(--mono);font-size:10px;color:var(--text3)">No patterns detected</span>';
-  }
+  if(!data.patterns?.length) pc.innerHTML = '<span style="font-size:11px;color:var(--text3)">No patterns detected</span>';
 }
 
-function clearNodeDetail() {
-  document.getElementById('nd-empty').style.display   = 'flex';
-  document.getElementById('nd-content').style.display = 'none';
-  document.querySelectorAll('.acct-row').forEach(r => r.classList.remove('selected'));
-}
+function clearDetail(){
+  document.getElementById('nd-empty').style.display = 'flex';
+  document.getElementById('nd-detail').classList.remove('show');
 }

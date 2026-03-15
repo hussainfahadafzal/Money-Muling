@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 /* ── Upload Page Logic ── */
 
 const dropZone   = document.getElementById('drop-zone');
@@ -149,7 +149,7 @@ function resetProgress() {
   progWrap.classList.remove('show');
   progFill.style.width = '0%';
   progPct.textContent  = '0%';
-=======
+
 /* ── Upload Page Logic ── */
 
 const dropZone   = document.getElementById('drop-zone');
@@ -300,5 +300,5 @@ function resetProgress() {
   progWrap.classList.remove('show');
   progFill.style.width = '0%';
   progPct.textContent  = '0%';
->>>>>>> c67093b3709cfa654f81c6a0261652a27a512fe4
+}
 }

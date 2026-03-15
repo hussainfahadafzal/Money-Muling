@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 /* ============================================================
    RIFT 2026 — Shared Light Theme
    Used by: index.html (via link tag)
@@ -298,12 +298,7 @@ body {
 @keyframes fadeUp {
   from { opacity:0; transform:translateY(14px); }
   to   { opacity:1; transform:translateY(0);    }
-=======
-/* ============================================================
-   RIFT 2026 — Shared Light Theme
-   Used by: index.html (via link tag)
-   dashboard.html has its own embedded styles (self-contained)
-   ============================================================ */
+}
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
@@ -598,5 +593,4 @@ body {
 @keyframes fadeUp {
   from { opacity:0; transform:translateY(14px); }
   to   { opacity:1; transform:translateY(0);    }
->>>>>>> c67093b3709cfa654f81c6a0261652a27a512fe4
 }

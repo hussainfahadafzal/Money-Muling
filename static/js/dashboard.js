@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 
 function scoreColor(s) {
   if (s >= 75) return '#f43f5e';
@@ -300,7 +300,7 @@ function clearNodeDetail() {
   document.getElementById('nd-empty').style.display   = 'flex';
   document.getElementById('nd-content').style.display = 'none';
   document.querySelectorAll('.acct-row').forEach(r => r.classList.remove('selected'));
-=======
+
 
 function scoreColor(s) {
   if (s >= 75) return '#f43f5e';
@@ -602,5 +602,5 @@ function clearNodeDetail() {
   document.getElementById('nd-empty').style.display   = 'flex';
   document.getElementById('nd-content').style.display = 'none';
   document.querySelectorAll('.acct-row').forEach(r => r.classList.remove('selected'));
->>>>>>> c67093b3709cfa654f81c6a0261652a27a512fe4
+}
 }

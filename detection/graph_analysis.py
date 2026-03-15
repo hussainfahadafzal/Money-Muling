@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 """
 RIFT 2026 — Money Muling Detection Engine
 
@@ -304,7 +304,7 @@ def analyze_transactions(df: pd.DataFrame, max_runtime_seconds: float = 30.0) ->
             "processing_time_seconds":     round(time.time() - t0, 3),
         },
         "graph": {"nodes": nodes, "edges": edges},
-=======
+    }
 """
 RIFT 2026 — Money Muling Detection Engine
 
@@ -610,5 +610,4 @@ def analyze_transactions(df: pd.DataFrame, max_runtime_seconds: float = 30.0) ->
             "processing_time_seconds":     round(time.time() - t0, 3),
         },
         "graph": {"nodes": nodes, "edges": edges},
->>>>>>> c67093b3709cfa654f81c6a0261652a27a512fe4
     }

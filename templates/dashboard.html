@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -314,7 +313,180 @@ html, body { height:100%; overflow:hidden; font-family:var(--sans); background:v
 .rc-members { font-size:11px; color:var(--text3); }
 .rc-bar-track { height:4px; background:var(--bg); border:1px solid var(--border); border-radius:2px; overflow:hidden; }
 .rc-bar-fill  { height:100%; border-radius:2px; }
-</style>
+
+/* ══════════════════════════════════════════════════════════════
+   DASHBOARD RESPONSIVE
+   Strategy:
+   - Desktop  (≥1024px): 3-column grid (sidebar | graph | detail)
+   - Tablet   (768–1023px): sidebar hidden, graph full width, detail below
+   - Mobile   (<768px): single column, graph gets fixed height, all panels stack
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Hamburger menu button (mobile only) ── */
+.nav-menu-btn {
+  display: none;
+  background: none; border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 8px;
+  font-size: 16px; cursor: pointer; color: var(--text2);
+}
+
+/* ── Mobile bottom nav (replaces topbar pills on small screens) ── */
+.mobile-stats {
+  display: none;
+  background: var(--white); border-top: 1px solid var(--border);
+  padding: 10px 16px; gap: 0;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.mobile-stat {
+  flex-shrink: 0; text-align: center; padding: 4px 14px;
+  border-right: 1px solid var(--border);
+}
+.mobile-stat:last-child { border-right: none; }
+.mobile-stat-val { font-family: var(--mono); font-size: 15px; font-weight: 700; line-height: 1; }
+.mobile-stat-lbl { font-size: 9px; color: var(--text3); margin-top: 2px; }
+
+/* ── Collapsible sidebar panel (mobile) ── */
+.sidebar-toggle {
+  display: none;
+  width: 100%; padding: 10px 14px;
+  background: var(--white); border: none; border-bottom: 1px solid var(--border);
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  color: var(--text2); cursor: pointer; text-align: left;
+  align-items: center; justify-content: space-between;
+}
+
+/* ═══════════════════════════════════
+   TABLET: 768px – 1023px
+   2-column: graph takes full center,
+   detail panel moves below graph
+═══════════════════════════════════ */
+@media (max-width: 1023px) {
+  /* 3-col → 2-col: hide sidebar, stack detail below graph */
+  .main { grid-template-columns: 1fr; grid-template-rows: auto auto auto; }
+
+  .sidebar { display: none; } /* hidden by default, toggleable */
+  .sidebar.open {
+    display: flex; grid-column: 1; grid-row: 1;
+    height: auto; max-height: 280px; overflow-y: auto;
+    flex-direction: row; flex-wrap: wrap; border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar.open .sb-block { flex: 1; min-width: 200px; border-bottom: none; border-right: 1px solid var(--border); }
+  .sidebar.open .sb-block.grow { display: none; } /* hide account list on tablet */
+
+  .sidebar-toggle { display: flex; }
+
+  /* Graph gets most of the height */
+  .graph-center { grid-row: 2; height: 55vh; min-height: 300px; }
+
+  /* Detail panel full width below */
+  .detail {
+    grid-row: 3;
+    border-left: none; border-top: 1px solid var(--border);
+    height: auto; max-height: 400px; overflow-y: auto;
+  }
+
+  /* Topbar: hide middle pills, keep brand + actions */
+  .tb-pills { display: none; }
+  .mobile-stats { display: flex; }
+
+  /* Topbar actions compact */
+  .topbar { padding: 0 12px; gap: 8px; }
+  .tb-sep { display: none; }
+
+  /* Graph controls: 2 rows */
+  .g-toolbar { flex-wrap: wrap; gap: 4px; }
+  .g-toolbar .btn { font-size: 10px; padding: 5px 9px; }
+
+  /* Hide search on tablet (space limited) */
+  .g-search { display: none; }
+
+  /* Legend compact */
+  .g-legend { gap: 8px; padding: 7px 10px; font-size: 10px; }
+}
+
+/* ═══════════════════════════════════
+   MOBILE: < 768px
+   Single column, stacked layout
+═══════════════════════════════════ */
+@media (max-width: 767px) {
+  /* Page becomes scrollable on mobile */
+  .page { height: auto; min-height: 100vh; overflow: visible; }
+
+  /* Topbar: minimal */
+  .topbar { height: 48px; padding: 0 12px; }
+  .tb-sep, .tb-pills { display: none; }
+  .tb-actions .btn-ghost { display: none; } /* hide "New Upload" button */
+  .tb-actions #btn-dl { font-size: 10px; padding: 6px 10px; }
+  .topbar > div:nth-child(3) { display: none; } /* hide breadcrumb */
+
+  /* Mobile stats bar */
+  .mobile-stats { display: flex; padding: 8px 0; }
+
+  /* Main: single column, all stacked */
+  .main { grid-template-columns: 1fr; grid-template-rows: auto auto auto auto; overflow: visible; }
+
+  /* Sidebar toggle button */
+  .sidebar-toggle { display: flex; }
+
+  /* Sidebar: collapsible */
+  .sidebar { display: none; order: 1; }
+  .sidebar.open {
+    display: flex; flex-direction: column;
+    height: auto; border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar.open .sb-block.grow { max-height: 180px; }
+
+  /* Graph: fixed height so it's usable */
+  .graph-center { order: 2; height: 60vw; min-height: 260px; max-height: 400px; }
+
+  /* Hide graph overlays that won't fit */
+  .g-search  { display: none; }
+  .g-toolbar { top: 8px; left: 8px; gap: 4px; flex-wrap: wrap; max-width: calc(100% - 16px); }
+  .g-toolbar .btn { font-size: 9px; padding: 5px 8px; }
+  .g-legend  { gap: 6px; padding: 6px 10px; flex-wrap: wrap; bottom: 8px; left: 8px; right: 8px; max-width: none; }
+  .leg       { font-size: 10px; }
+  .g-badge   { display: none; } /* too cramped */
+
+  /* Detail panel: full width, scrollable */
+  .detail { order: 3; border-left: none; border-top: 1px solid var(--border); max-height: none; height: auto; overflow: visible; }
+
+  /* Tab panes: auto height on mobile */
+  .tab-pane.active { overflow: visible; max-height: none; }
+  #t-node { overflow-y: visible; }
+
+  /* Node detail: stack score donut + info */
+  .nd-hero { flex-direction: column; align-items: flex-start; gap: 12px; padding: 14px; }
+  .donut   { align-self: center; }
+  .nd-info { width: 100%; }
+  .nd-meta { grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
+
+  /* Rings: full height */
+  .rings-pane { height: auto; }
+  .rings-scroll { max-height: 320px; }
+
+  /* Stat cards: 2 columns */
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .sc-val { font-size: 20px; }
+
+  /* Account list: max height */
+  .acct-scroll { max-height: 160px; }
+
+  /* Sidebar toggle label */
+  .sidebar-toggle { padding: 12px 14px; font-size: 12px; }
+}
+
+/* ═══════════════════════════════════
+   VERY SMALL MOBILE: < 380px
+═══════════════════════════════════ */
+@media (max-width: 380px) {
+  .tb-brand { font-size: 11px; }
+  .tab { font-size: 10px; padding: 10px 4px; }
+  .g-toolbar .btn { font-size: 9px; padding: 4px 7px; }
+  .nd-meta { grid-template-columns: 1fr 1fr; }
+  .stat-grid { gap: 4px; }
+}
 </head>
 <body>
 <div class="page">
@@ -342,6 +514,21 @@ html, body { height:100%; overflow:hidden; font-family:var(--sans); background:v
       <button class="btn btn-primary" id="btn-dl">↓ JSON Report</button>
     </div>
   </div>
+
+  <!-- Mobile stats bar -->
+  <div class="mobile-stats">
+    <div class="mobile-stat"><div class="mobile-stat-val" id="mb-acc" style="color:var(--blue)">—</div><div class="mobile-stat-lbl">Accounts</div></div>
+    <div class="mobile-stat"><div class="mobile-stat-val" id="mb-txn">—</div><div class="mobile-stat-lbl">Transactions</div></div>
+    <div class="mobile-stat"><div class="mobile-stat-val" id="mb-sus" style="color:var(--red)">—</div><div class="mobile-stat-lbl">Suspicious</div></div>
+    <div class="mobile-stat"><div class="mobile-stat-val" id="mb-rng" style="color:var(--amber)">—</div><div class="mobile-stat-lbl">Rings</div></div>
+    <div class="mobile-stat"><div class="mobile-stat-val" id="mb-tim" style="color:var(--green)">—</div><div class="mobile-stat-lbl">Time(s)</div></div>
+  </div>
+
+  <!-- Sidebar toggle (tablet/mobile) -->
+  <button class="sidebar-toggle" id="sidebar-toggle">
+    <span>☰ &nbsp;Summary &amp; Accounts</span>
+    <span id="sidebar-arrow">▼</span>
+  </button>
 
   <!-- MAIN -->
   <div class="main">

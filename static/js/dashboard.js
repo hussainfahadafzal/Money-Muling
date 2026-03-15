@@ -110,6 +110,9 @@ function renderAll(d) {
   document.getElementById('tb-rng').textContent = s.fraud_rings_detected;
   document.getElementById('tb-tim').textContent = s.processing_time_seconds;
 
+  /* Mobile stats bar */
+  syncMobileStats(s);
+
   /* Sidebar stat cards */
   document.getElementById('sc-sus').textContent = s.suspicious_accounts_flagged;
   document.getElementById('sc-rng').textContent = s.fraud_rings_detected;
@@ -305,4 +308,31 @@ function showDetail(data){
 function clearDetail(){
   document.getElementById('nd-empty').style.display = 'flex';
   document.getElementById('nd-detail').classList.remove('show');
+}
+
+/* ── Sidebar toggle (tablet/mobile) ── */
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const sidebarEl     = document.querySelector('.sidebar');
+const arrowEl       = document.getElementById('sidebar-arrow');
+
+if (sidebarToggle && sidebarEl) {
+  sidebarToggle.addEventListener('click', () => {
+    const open = sidebarEl.classList.toggle('open');
+    if (arrowEl) arrowEl.textContent = open ? '▲' : '▼';
+  });
+}
+
+/* ── Sync mobile stats bar ── */
+function syncMobileStats(s) {
+  const map = {
+    'mb-acc': s.total_accounts_analyzed,
+    'mb-txn': s.total_transactions,
+    'mb-sus': s.suspicious_accounts_flagged,
+    'mb-rng': s.fraud_rings_detected,
+    'mb-tim': s.processing_time_seconds,
+  };
+  Object.entries(map).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  });
 }

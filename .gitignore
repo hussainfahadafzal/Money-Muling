@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 __pycache__/
 *.py[cod]
 *.pyo
@@ -7,4 +8,15 @@ env/
 .venv/
 uploads/
 *.csv
+=======
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+env/
+.venv/
+uploads/
+*.csv
+>>>>>>> c67093b3709cfa654f81c6a0261652a27a512fe4
 .DS_Store

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -150,4 +151,158 @@
 
   <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RIFT 2026 — Money Muling Detection Engine</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-logo">
+      <div class="nav-logo-dot"></div>
+      RIFT//2026
+    </div>
+    <ul class="nav-links">
+      <li><a href="#upload">Upload</a></li>
+      <li><a href="#algorithms">Algorithms</a></li>
+      <li><a href="/dashboard" class="nav-cta">Dashboard →</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">
+      <span>⬡</span> Graph Intelligence · Financial Crime Detection
+    </div>
+
+    <h1>
+      Follow <em>The</em> <strong>Money.</strong>
+    </h1>
+
+    <p class="hero-desc">
+      Upload transaction CSV data. Our graph-theoretic engine detects money muling rings,
+      smurfing behaviour, and layered shell networks in seconds.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#upload" class="btn btn-primary">↑ Upload CSV</a>
+      <a href="#algorithms" class="btn btn-outline">View Algorithms</a>
+    </div>
+
+    <div class="stat-strip">
+      <div class="stat-strip-item">
+        <div class="stat-strip-val">O(V+E)</div>
+        <div class="stat-strip-lbl">Core Complexity</div>
+      </div>
+      <div class="stat-strip-item">
+        <div class="stat-strip-val">&lt;30s</div>
+        <div class="stat-strip-lbl">10K Transactions</div>
+      </div>
+      <div class="stat-strip-item">
+        <div class="stat-strip-val">4</div>
+        <div class="stat-strip-lbl">Detection Patterns</div>
+      </div>
+      <div class="stat-strip-item">
+        <div class="stat-strip-val">0–100</div>
+        <div class="stat-strip-lbl">Suspicion Score</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- UPLOAD -->
+  <section class="upload-section" id="upload">
+    <div class="section-label">Step 01</div>
+    <h2 class="section-title">Upload Transaction Data</h2>
+    <p class="section-desc">
+      Drop a CSV file below. The engine validates the schema, builds a directed graph,
+      and runs all four detection algorithms automatically.
+    </p>
+
+    <div class="drop-zone" id="drop-zone">
+      <div class="drop-icon">📂</div>
+      <div class="drop-title">Drop your CSV here</div>
+      <p class="drop-hint">or click to browse · max 10 MB</p>
+      <div class="drop-chosen" id="drop-chosen"></div>
+      <input type="file" id="file-input" accept=".csv"/>
+    </div>
+
+    <div class="schema-row">
+      <span class="schema-label">Required columns:</span>
+      <span class="tag tag-blue">transaction_id</span>
+      <span class="tag tag-blue">sender_id</span>
+      <span class="tag tag-blue">receiver_id</span>
+      <span class="tag tag-blue">amount</span>
+      <span class="tag tag-blue">timestamp</span>
+    </div>
+
+    <div class="error-box" id="error-box"></div>
+
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-header">
+        <span id="progress-text">Initializing…</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <button class="analyze-btn" id="analyze-btn" disabled>
+      <span id="btn-label">▶ Run Analysis</span>
+    </button>
+  </section>
+
+  <!-- ALGORITHMS -->
+  <section class="algo-section" id="algorithms">
+    <div class="algo-section-inner">
+      <div class="section-label">Detection Algorithms</div>
+      <h2 class="section-title">Four-Layer Detection</h2>
+      <p class="section-desc">
+        Each algorithm targets a distinct money laundering pattern,
+        combined into one unified suspicion score (0–100).
+      </p>
+      <div class="algo-grid">
+        <div class="algo-card">
+          <div class="algo-icon">🔄</div>
+          <div class="algo-name">Cycle Detection</div>
+          <p class="algo-desc">Detects circular fund routing (A→B→C→A) via Strongly Connected Components. Flags rings of 3+ accounts. Score: <strong>+35</strong></p>
+          <span class="algo-complexity">O(V + E)</span>
+        </div>
+        <div class="algo-card">
+          <div class="algo-icon">🐙</div>
+          <div class="algo-name">Smurfing Detection</div>
+          <p class="algo-desc">Fan-in (≥5 senders → 1 receiver) and fan-out (1 sender → ≥5 receivers) within a 72-hour temporal window. Score: <strong>+25</strong></p>
+          <span class="algo-complexity">O(T log T)</span>
+        </div>
+        <div class="algo-card">
+          <div class="algo-icon">🧅</div>
+          <div class="algo-name">Layered Shell Networks</div>
+          <p class="algo-desc">BFS through 3+ hop chains via low-activity shell accounts (≤3 total transactions). Score: <strong>+20</strong></p>
+          <span class="algo-complexity">O(V + E)</span>
+        </div>
+        <div class="algo-card">
+          <div class="algo-icon">🎯</div>
+          <div class="algo-name">Hub Node Analysis</div>
+          <p class="algo-desc">Flags accounts at the 95th percentile of combined degree. Legitimate merchants are auto-whitelisted. Score: <strong>+20</strong></p>
+          <span class="algo-complexity">O(V)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <span>RIFT 2026 · Graph-Based Financial Crime Detection</span>
+    <span>NetworkX · Flask · Cytoscape.js</span>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+</body>
+>>>>>>> c67093b3709cfa654f81c6a0261652a27a512fe4
 </html>

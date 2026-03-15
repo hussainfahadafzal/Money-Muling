@@ -8,7 +8,7 @@ A graph-theoretic fraud detection engine that identifies money muling rings, smu
 
 ## 🌐 Live Demo
 
-🔗 **https://moneymuling-detection.onrender.com/**
+🔗 **https://moneymulingdetectionsystem.onrender.com**
 
 ---
 

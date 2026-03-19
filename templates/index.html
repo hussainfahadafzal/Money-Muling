@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% set active = "home" %}
-{% block title %}Home — Money Muling{% endblock %}
+{% block title %}Home — RIFT 2026{% endblock %}
 
 {% block head_scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -183,43 +183,109 @@
 @media(max-width:640px){.bottom-grid{grid-template-columns:1fr}.algo-grid{grid-template-columns:1fr 1fr}.hero-stats-strip{flex-wrap:wrap}.hss-item{min-width:50%;border-bottom:1px solid var(--border)}}
 @media(max-width:480px){.stat-row{grid-template-columns:1fr 1fr}.algo-grid{grid-template-columns:1fr}}
 {% endblock %}
-
 {% block content %}
 <div class="page-wrap">
 
-  <!-- Page header -->
   <div class="page-header">
     <div class="page-title"><span class="page-title-icon">📡</span> Overview</div>
     <a href="/analyze" class="btn btn-red">↑ New Analysis</a>
   </div>
 
-  <!-- ═══ HERO (always visible) ═══ -->
-  <div class="hero">
-    <div class="hero-pill">
-      <div class="hero-pill-dot"></div>
-      Graph Intelligence · Financial Crime Detection
+  <!-- LANDING: visible before analysis, hidden after -->
+  <div id="landing-section">
+
+    <div class="hero">
+      <div class="hero-pill">
+        <div class="hero-pill-dot"></div>
+        Graph Intelligence · Financial Crime Detection
+      </div>
+      <h1>Detect Money Muling<br/>with <em>Graph Theory</em></h1>
+      <p class="hero-desc">
+        Upload transaction CSV data and our graph-theoretic engine detects
+        fraud rings, smurfing behaviour, and layered shell networks — in seconds.
+      </p>
+      <div class="hero-btns">
+        <a href="/analyze" class="btn btn-red" style="font-size:13px;padding:11px 24px">↑ Upload CSV &amp; Analyze</a>
+        <a href="/dashboard" class="btn btn-ghost" style="font-size:13px;padding:11px 24px">View Dashboard</a>
+      </div>
+      <div class="hero-stats-strip">
+        <div class="hss-item"><div class="hss-val">O(V+E)</div><div class="hss-lbl">Core Complexity</div></div>
+        <div class="hss-item"><div class="hss-val">&lt;30s</div><div class="hss-lbl">10K Transactions</div></div>
+        <div class="hss-item"><div class="hss-val">4</div><div class="hss-lbl">Detection Algorithms</div></div>
+        <div class="hss-item"><div class="hss-val">0–100</div><div class="hss-lbl">Suspicion Score</div></div>
+      </div>
     </div>
-    <h1>Detect Money Muling<br/>with <em>Graph Theory</em></h1>
-    <p class="hero-desc">
-      Upload transaction CSV data and our graph-theoretic engine detects
-      fraud rings, smurfing behaviour, and layered shell networks — in seconds.
-    </p>
-    <div class="hero-btns">
-      <a href="/analyze" class="btn btn-red" style="font-size:13px;padding:11px 24px">↑ Upload CSV &amp; Analyze</a>
-      <a href="/dashboard" class="btn btn-ghost" style="font-size:13px;padding:11px 24px">View Dashboard</a>
+
+    <div style="margin-bottom:14px">
+      <div style="margin-bottom:14px">
+        <div class="section-label">Detection Algorithms</div>
+        <div class="section-title">Four-Layer Fraud Detection</div>
+        <div class="section-sub">Each algorithm targets a distinct money laundering pattern, combined into one unified suspicion score.</div>
+      </div>
+      <div class="algo-grid">
+        <div class="algo-card" style="--line-color:#06b6d4;--ic-bg:rgba(6,182,212,0.1);--ic-bd:rgba(6,182,212,0.22);--ic-c:#06b6d4">
+          <div class="algo-card-icon" style="background:var(--ic-bg);border-color:var(--ic-bd)">🔄</div>
+          <div class="algo-card-name">Cycle Detection</div>
+          <div class="algo-card-desc">Detects circular fund routing (A→B→C→A) using Tarjan's Strongly Connected Components. An SCC of ≥3 nodes indicates a money loop.</div>
+          <div class="algo-card-foot">
+            <span class="algo-complexity" style="background:var(--ic-bg);color:var(--ic-c);border-color:var(--ic-bd)">O(V + E)</span>
+            <span class="algo-score">+35 score</span>
+          </div>
+        </div>
+        <div class="algo-card" style="--line-color:#ef4444;--ic-bg:rgba(239,68,68,0.1);--ic-bd:rgba(239,68,68,0.22);--ic-c:#ef4444">
+          <div class="algo-card-icon" style="background:var(--ic-bg);border-color:var(--ic-bd)">🐙</div>
+          <div class="algo-card-name">Smurfing Detection</div>
+          <div class="algo-card-desc">Fan-in (≥5 senders → 1 receiver) and fan-out (1 sender → ≥5 receivers) within a 72-hour sliding window.</div>
+          <div class="algo-card-foot">
+            <span class="algo-complexity" style="background:var(--ic-bg);color:var(--ic-c);border-color:var(--ic-bd)">O(T log T)</span>
+            <span class="algo-score">+25 score</span>
+          </div>
+        </div>
+        <div class="algo-card" style="--line-color:#f59e0b;--ic-bg:rgba(245,158,11,0.1);--ic-bd:rgba(245,158,11,0.22);--ic-c:#f59e0b">
+          <div class="algo-card-icon" style="background:var(--ic-bg);border-color:var(--ic-bd)">🧅</div>
+          <div class="algo-card-name">Layered Shell Networks</div>
+          <div class="algo-card-desc">BFS through 3+ hop chains via shell accounts with ≤3 total transactions. Detects obfuscation chains.</div>
+          <div class="algo-card-foot">
+            <span class="algo-complexity" style="background:var(--ic-bg);color:var(--ic-c);border-color:var(--ic-bd)">O(V + E)</span>
+            <span class="algo-score">+20 score</span>
+          </div>
+        </div>
+        <div class="algo-card" style="--line-color:#8b5cf6;--ic-bg:rgba(139,92,246,0.1);--ic-bd:rgba(139,92,246,0.22);--ic-c:#8b5cf6">
+          <div class="algo-card-icon" style="background:var(--ic-bg);border-color:var(--ic-bd)">🎯</div>
+          <div class="algo-card-name">Hub Node Analysis</div>
+          <div class="algo-card-desc">Flags accounts at the 95th percentile of combined degree. Legitimate merchants auto-whitelisted via diversity ratio.</div>
+          <div class="algo-card-foot">
+            <span class="algo-complexity" style="background:var(--ic-bg);color:var(--ic-c);border-color:var(--ic-bd)">O(V)</span>
+            <span class="algo-score">+20 score</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="hero-stats-strip">
-      <div class="hss-item"><div class="hss-val">O(V+E)</div><div class="hss-lbl">Core Complexity</div></div>
-      <div class="hss-item"><div class="hss-val">&lt;30s</div><div class="hss-lbl">10K Transactions</div></div>
-      <div class="hss-item"><div class="hss-val">4</div><div class="hss-lbl">Detection Algorithms</div></div>
-      <div class="hss-item"><div class="hss-val">0–100</div><div class="hss-lbl">Suspicion Score</div></div>
+
+    <div class="pipeline">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <div>
+          <div class="section-label" style="margin-bottom:4px">System Workflow</div>
+          <div style="font-size:14px;font-weight:600">How the engine processes your data</div>
+        </div>
+        <a href="/analyze" class="btn btn-red" style="font-size:11px;padding:8px 16px">Get Started →</a>
+      </div>
+      <div class="pipeline-steps">
+        <div class="ps"><div class="ps-num">01</div><div class="ps-label">Upload CSV</div><div class="ps-sub">transaction data</div></div>
+        <div class="ps"><div class="ps-num">02</div><div class="ps-label">Validate</div><div class="ps-sub">5 required columns</div></div>
+        <div class="ps"><div class="ps-num">03</div><div class="ps-label">Build Graph</div><div class="ps-sub">nodes + edges</div></div>
+        <div class="ps"><div class="ps-num">04</div><div class="ps-label">Whitelist</div><div class="ps-sub">exclude merchants</div></div>
+        <div class="ps"><div class="ps-num">05</div><div class="ps-label">4 Detectors</div><div class="ps-sub">run in parallel</div></div>
+        <div class="ps"><div class="ps-num">06</div><div class="ps-label">Score</div><div class="ps-sub">0–100 per account</div></div>
+        <div class="ps"><div class="ps-num">07</div><div class="ps-label">Visualise</div><div class="ps-sub">interactive graph</div></div>
+      </div>
     </div>
+
   </div>
 
-  <!-- ═══ DATA STATE (shown after analysis) ═══ -->
+  <!-- DATA: hidden before analysis, visible after -->
   <div id="data-section" style="display:none">
 
-    <!-- Stat cards -->
     <div class="stat-row">
       <div class="stat-card" style="--sc-color:var(--red)">
         <div class="stat-top">
@@ -259,7 +325,6 @@
       </div>
     </div>
 
-    <!-- Summary strip -->
     <div class="sum-strip">
       <div class="sum-card">
         <div class="sum-dot" style="background:var(--red);box-shadow:0 0 6px var(--red)"></div>
@@ -279,21 +344,24 @@
       </div>
     </div>
 
-    <!-- Bottom 3-col grid -->
     <div class="bottom-grid" style="margin-bottom:14px">
       <div class="card">
         <div class="card-hdr">
           <div class="card-title" style="margin-bottom:0">Top Suspicious Accounts</div>
           <a href="/dashboard" class="card-hdr-link">View graph →</a>
         </div>
-        <div id="home-accounts"><div style="padding:24px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3)">No data.</div></div>
+        <div id="home-accounts">
+          <div style="padding:24px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3)">No data.</div>
+        </div>
       </div>
       <div class="card">
         <div class="card-hdr">
           <div class="card-title" style="margin-bottom:0">Ring Breakdown</div>
           <a href="/rings" class="card-hdr-link">All rings →</a>
         </div>
-        <div id="home-breakdown"><div style="padding:24px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3)">No data.</div></div>
+        <div id="home-breakdown">
+          <div style="padding:24px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3)">No data.</div>
+        </div>
       </div>
       <div class="card">
         <div class="card-hdr">
@@ -304,101 +372,6 @@
       </div>
     </div>
 
-  </div>
-
-  <!-- ═══ ALGORITHM CARDS (always visible) ═══ -->
-  <div style="margin-bottom:14px">
-    <div style="margin-bottom:14px">
-      <div class="section-label">Detection Algorithms</div>
-      <div class="section-title">Four-Layer Fraud Detection</div>
-      <div class="section-sub">Each algorithm targets a distinct money laundering pattern, combined into one unified suspicion score.</div>
-    </div>
-    <div class="algo-grid">
-      <div class="algo-card" style="--line-color:#06b6d4;--ic-bg:rgba(6,182,212,0.1);--ic-bd:rgba(6,182,212,0.22);--ic-c:#06b6d4">
-        <div class="algo-card-icon" style="background:var(--ic-bg);border-color:var(--ic-bd)">🔄</div>
-        <div class="algo-card-name">Cycle Detection</div>
-        <div class="algo-card-desc">Detects circular fund routing (A→B→C→A) using Tarjan's Strongly Connected Components. An SCC of ≥3 nodes indicates a money loop.</div>
-        <div class="algo-card-foot">
-          <span class="algo-complexity" style="background:var(--ic-bg);color:var(--ic-c);border-color:var(--ic-bd)">O(V + E)</span>
-          <span class="algo-score">+35 score</span>
-        </div>
-      </div>
-      <div class="algo-card" style="--line-color:#ef4444;--ic-bg:rgba(239,68,68,0.1);--ic-bd:rgba(239,68,68,0.22);--ic-c:#ef4444">
-        <div class="algo-card-icon" style="background:var(--ic-bg);border-color:var(--ic-bd)">🐙</div>
-        <div class="algo-card-name">Smurfing Detection</div>
-        <div class="algo-card-desc">Fan-in (≥5 senders → 1 receiver) and fan-out (1 sender → ≥5 receivers) within a 72-hour sliding window.</div>
-        <div class="algo-card-foot">
-          <span class="algo-complexity" style="background:var(--ic-bg);color:var(--ic-c);border-color:var(--ic-bd)">O(T log T)</span>
-          <span class="algo-score">+25 score</span>
-        </div>
-      </div>
-      <div class="algo-card" style="--line-color:#f59e0b;--ic-bg:rgba(245,158,11,0.1);--ic-bd:rgba(245,158,11,0.22);--ic-c:#f59e0b">
-        <div class="algo-card-icon" style="background:var(--ic-bg);border-color:var(--ic-bd)">🧅</div>
-        <div class="algo-card-name">Layered Shell Networks</div>
-        <div class="algo-card-desc">BFS through 3+ hop chains via shell accounts with ≤3 total transactions. Detects obfuscation chains.</div>
-        <div class="algo-card-foot">
-          <span class="algo-complexity" style="background:var(--ic-bg);color:var(--ic-c);border-color:var(--ic-bd)">O(V + E)</span>
-          <span class="algo-score">+20 score</span>
-        </div>
-      </div>
-      <div class="algo-card" style="--line-color:#8b5cf6;--ic-bg:rgba(139,92,246,0.1);--ic-bd:rgba(139,92,246,0.22);--ic-c:#8b5cf6">
-        <div class="algo-card-icon" style="background:var(--ic-bg);border-color:var(--ic-bd)">🎯</div>
-        <div class="algo-card-name">Hub Node Analysis</div>
-        <div class="algo-card-desc">Flags accounts at the 95th percentile of combined degree. Legitimate merchants auto-whitelisted via diversity ratio.</div>
-        <div class="algo-card-foot">
-          <span class="algo-complexity" style="background:var(--ic-bg);color:var(--ic-c);border-color:var(--ic-bd)">O(V)</span>
-          <span class="algo-score">+20 score</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ PIPELINE ═══ -->
-  <div class="pipeline">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div>
-        <div class="section-label" style="margin-bottom:4px">System Workflow</div>
-        <div style="font-size:14px;font-weight:600">How the engine processes your data</div>
-      </div>
-      <a href="/analyze" class="btn btn-red" style="font-size:11px;padding:8px 16px">Get Started →</a>
-    </div>
-    <div class="pipeline-steps">
-      <div class="ps">
-        <div class="ps-num">01</div>
-        <div class="ps-label">Upload CSV</div>
-        <div class="ps-sub">transaction data</div>
-      </div>
-      <div class="ps">
-        <div class="ps-num">02</div>
-        <div class="ps-label">Validate Schema</div>
-        <div class="ps-sub">5 required columns</div>
-      </div>
-      <div class="ps">
-        <div class="ps-num">03</div>
-        <div class="ps-label">Build Graph</div>
-        <div class="ps-sub">nodes + edges</div>
-      </div>
-      <div class="ps">
-        <div class="ps-num">04</div>
-        <div class="ps-label">Whitelist</div>
-        <div class="ps-sub">exclude merchants</div>
-      </div>
-      <div class="ps">
-        <div class="ps-num">05</div>
-        <div class="ps-label">4 Detectors</div>
-        <div class="ps-sub">run in parallel</div>
-      </div>
-      <div class="ps">
-        <div class="ps-num">06</div>
-        <div class="ps-label">Score Accounts</div>
-        <div class="ps-sub">0–100 per account</div>
-      </div>
-      <div class="ps">
-        <div class="ps-num">07</div>
-        <div class="ps-label">Visualise</div>
-        <div class="ps-sub">interactive graph</div>
-      </div>
-    </div>
   </div>
 
 </div>
@@ -417,6 +390,7 @@
     const s = d.summary;
 
     document.getElementById('data-section').style.display = 'block';
+    document.getElementById('landing-section').style.display = 'none';
 
     /* Stat cards */
     document.getElementById('hs-sus').textContent = s.suspicious_accounts_flagged;

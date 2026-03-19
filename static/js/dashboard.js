@@ -406,3 +406,114 @@ function initCharts(d){
     },
   });
 }
+
+/* ══════════════════════════════════════════════════════
+   ANALYZE PAGE — Upload logic (uses dsh- prefixed IDs
+   so it never conflicts with index.html)
+══════════════════════════════════════════════════════ */
+(function(){
+  const dropZone  = document.getElementById('dsh-drop-zone');
+  const fileInput = document.getElementById('dsh-file-input');
+  const chosen    = document.getElementById('dsh-drop-chosen');
+  const btn       = document.getElementById('dsh-analyze-btn');
+  const errBox    = document.getElementById('dsh-error-box');
+  const progWrap  = document.getElementById('dsh-progress-wrap');
+  const progFill  = document.getElementById('dsh-progress-fill');
+  const progText  = document.getElementById('dsh-progress-text');
+  const progPct   = document.getElementById('dsh-progress-pct');
+  const btnLabel  = document.getElementById('dsh-btn-label');
+
+  // Elements only exist on dashboard page — bail if not found
+  if(!dropZone) return;
+
+  let file = null;
+
+  dropZone.addEventListener('click', ()=>fileInput.click());
+  dropZone.addEventListener('dragover', e=>{ e.preventDefault(); dropZone.classList.add('over'); });
+  dropZone.addEventListener('dragleave', ()=>dropZone.classList.remove('over'));
+  dropZone.addEventListener('drop', e=>{
+    e.preventDefault(); dropZone.classList.remove('over');
+    const f = e.dataTransfer.files[0];
+    if(f && f.name.toLowerCase().endsWith('.csv')) setFile(f);
+    else showErr('Only .csv files are accepted.');
+  });
+  fileInput.addEventListener('change', ()=>{ if(fileInput.files[0]) setFile(fileInput.files[0]); });
+
+  function setFile(f){
+    file = f;
+    chosen.textContent = `✓  ${f.name}  ·  ${(f.size/1024).toFixed(1)} KB`;
+    chosen.classList.add('show');
+    btn.disabled = false;
+    hideErr();
+  }
+  function showErr(msg){ errBox.textContent='⚠  '+msg; errBox.classList.add('show'); }
+  function hideErr(){ errBox.classList.remove('show'); }
+
+  const STEPS_FAST = ['Parsing CSV…','Validating schema…','Building directed graph…','Running cycle detection…','Detecting smurfing patterns…','Analyzing shell networks…','Scoring suspicion levels…'];
+  const STEPS_SLOW = ['Graph traversal in progress…','Computing suspicion scores…','Finalizing ring detection…','Still working, please wait…','Almost there…'];
+
+  btn.addEventListener('click', async ()=>{
+    if(!file) return;
+    btn.disabled = true; hideErr();
+    progWrap.classList.add('show');
+    btnLabel.textContent = 'Analyzing…';
+
+    let pct=0, stepFast=0, stepSlow=0;
+    const startTime = Date.now();
+
+    const fastTicker = setInterval(()=>{
+      if(pct>=75){ clearInterval(fastTicker); return; }
+      pct = Math.min(pct + Math.random()*7+3, 75);
+      progFill.style.width = pct+'%';
+      progPct.textContent  = Math.round(pct)+'%';
+      progText.textContent = STEPS_FAST[Math.min(stepFast++, STEPS_FAST.length-1)];
+    }, 350);
+
+    const slowTicker = setInterval(()=>{
+      if(pct<75) return;
+      const elapsed = Math.round((Date.now()-startTime)/1000);
+      if(pct<95){ pct=Math.min(pct+0.3,95); progFill.style.width=pct+'%'; progPct.textContent=Math.round(pct)+'%'; }
+      progText.textContent = `${STEPS_SLOW[stepSlow%STEPS_SLOW.length]}  (${elapsed}s elapsed)`;
+      stepSlow++;
+    }, 1200);
+
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res  = await fetch('/analyze', { method:'POST', body:form });
+      const json = await res.json();
+      clearInterval(fastTicker); clearInterval(slowTicker);
+
+      if(json.status !== 'ok'){
+        progWrap.classList.remove('show');
+        progFill.style.width='0%';
+        showErr(json.message || 'Analysis failed.');
+        btn.disabled = false;
+        btnLabel.textContent = '▶ Run Analysis';
+        return;
+      }
+
+      try { sessionStorage.setItem('riftResult', JSON.stringify(json.data)); }
+      catch(e){ const slim={...json.data,graph:{nodes:json.data.graph.nodes,edges:[]}};
+                sessionStorage.setItem('riftResult', JSON.stringify(slim)); }
+
+      progFill.style.width='100%'; progPct.textContent='100%'; progText.textContent='✓  Complete!';
+
+      // Load data into dashboard without page reload
+      DATA = json.data;
+      document.getElementById('g-empty').style.display='none';
+      renderAll(DATA);
+      const st=document.getElementById('nb-status-text');
+      if(st) st.textContent='Analysis Active';
+
+      setTimeout(()=>navTo('home'), 600);
+
+    } catch(err){
+      clearInterval(fastTicker); clearInterval(slowTicker);
+      progWrap.classList.remove('show');
+      showErr('Network error — please try again.');
+      btn.disabled = false;
+      btnLabel.textContent = '▶ Run Analysis';
+    }
+  });
+})();

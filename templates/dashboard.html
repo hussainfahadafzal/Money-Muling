@@ -462,12 +462,12 @@ tr:hover td{background:var(--card2)}
         <div style="font-size:20px;font-weight:700;margin-bottom:8px">Upload Transaction Data</div>
         <div style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:20px">Drop a CSV file below. The engine validates the schema, builds a directed graph, and runs all four detection algorithms automatically.</div>
 
-        <div class="drop-zone" id="drop-zone">
+        <div class="drop-zone" id="dsh-drop-zone">
           <div class="dz-icon">📂</div>
           <div class="dz-title">Drop your CSV here</div>
           <p class="dz-hint">or click to browse · max 10 MB</p>
-          <div class="dz-chosen" id="drop-chosen"></div>
-          <input type="file" id="file-input" accept=".csv"/>
+          <div class="dz-chosen" id="dsh-drop-chosen"></div>
+          <input type="file" id="dsh-file-input" accept=".csv"/>
         </div>
 
         <div class="schema-row">
@@ -479,16 +479,16 @@ tr:hover td{background:var(--card2)}
           <span class="schema-tag">timestamp</span>
         </div>
 
-        <div class="error-box" id="error-box"></div>
-        <div class="progress-wrap" id="progress-wrap">
+        <div class="error-box" id="dsh-error-box"></div>
+        <div class="progress-wrap" id="dsh-progress-wrap">
           <div class="progress-header">
-            <span id="progress-text">Initializing…</span>
-            <span id="progress-pct">0%</span>
+            <span id="dsh-progress-text">Initializing…</span>
+            <span id="dsh-progress-pct">0%</span>
           </div>
-          <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+          <div class="progress-track"><div class="progress-fill" id="dsh-progress-fill"></div></div>
         </div>
-        <button class="analyze-btn" id="analyze-btn" disabled>
-          <span id="btn-label">▶ Run Analysis</span>
+        <button class="analyze-btn" id="dsh-analyze-btn" disabled>
+          <span id="dsh-btn-label">▶ Run Analysis</span>
         </button>
       </div>
     </div>
@@ -692,7 +692,6 @@ tr:hover td{background:var(--card2)}
   </div><!-- /pages -->
 </div><!-- /shell -->
 
-<script src="{{ url_for('static', filename='js/index.js') }}"></script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
 </html>

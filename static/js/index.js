@@ -1,3 +1,6 @@
+/* ── Upload Page Logic (index.html only) ── */
+if (document.getElementById('drop-zone')) {
+
 /* ── Upload Page Logic ── */
 
 const dropZone   = document.getElementById('drop-zone');
@@ -148,4 +151,6 @@ function resetProgress() {
   progWrap.classList.remove('show');
   progFill.style.width = '0%';
   progPct.textContent  = '0%';
+}
+
 }

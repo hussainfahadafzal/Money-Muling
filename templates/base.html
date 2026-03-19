@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>{% block title %}RIFT 2026{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet"/>
+{% block head_scripts %}{% endblock %}
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:      #0f0f13;
+  --bg2:     #111118;
+  --card:    #1a1a24;
+  --card2:   #20202c;
+  --border:  rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text1:   #f0f4ff;
+  --text2:   #8892a4;
+  --text3:   #444860;
+  --red:     #ef4444;
+  --red-bg:  rgba(239,68,68,0.1);
+  --red-bd:  rgba(239,68,68,0.25);
+  --cyan:    #06b6d4;
+  --cyan-bg: rgba(6,182,212,0.1);
+  --cyan-bd: rgba(6,182,212,0.25);
+  --amber:   #f59e0b;
+  --amber-bg:rgba(245,158,11,0.1);
+  --amber-bd:rgba(245,158,11,0.25);
+  --green:   #10b981;
+  --green-bg:rgba(16,185,129,0.1);
+  --green-bd:rgba(16,185,129,0.25);
+  --purple:  #8b5cf6;
+  --blue:    #3b82f6;
+  --sans:'Inter',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+html,body{min-height:100vh;font-family:var(--sans);background:var(--bg);color:var(--text1);-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--card2);border-radius:2px}
+
+/* ── NAVBAR ── */
+.navbar{
+  height:52px;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:0 20px;gap:0;
+  position:sticky;top:0;z-index:100;
+}
+.nb-brand{display:flex;align-items:center;gap:10px;margin-right:28px;flex-shrink:0;text-decoration:none}
+.nb-logo{width:32px;height:32px;border-radius:8px;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.nb-name{font-size:14px;font-weight:700;color:var(--text1)}
+.nb-sub{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase}
+.nb-links{display:flex;align-items:center;gap:2px;flex:1}
+.nb-link{font-size:13px;font-weight:500;color:var(--text2);padding:6px 13px;border-radius:7px;border:none;background:transparent;cursor:pointer;transition:all 0.15s;text-decoration:none;display:inline-block}
+.nb-link:hover{color:var(--text1);background:var(--card2)}
+.nb-link.active{color:var(--red);background:var(--red-bg)}
+.nb-right{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0}
+.nb-status{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;font-weight:600;padding:5px 12px;border-radius:100px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.nb-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite}
+.nb-dot-red{background:var(--text3);box-shadow:none;animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* ── SHARED COMPONENTS ── */
+.page-wrap{padding:24px;max-width:1400px;margin:0 auto}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.page-title{font-size:22px;font-weight:700;letter-spacing:-0.02em;display:flex;align-items:center;gap:10px}
+.page-title-icon{font-size:20px}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.card-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px}
+
+.btn{font-family:var(--mono);font-size:11px;font-weight:700;padding:8px 16px;border-radius:7px;border:none;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:6px;letter-spacing:0.03em;text-decoration:none}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:#dc2626;box-shadow:0 0 16px rgba(239,68,68,0.3);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{color:var(--text1);border-color:var(--cyan);background:var(--cyan-bg)}
+.btn:disabled{opacity:0.35;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+.badge{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;border:1px solid}
+.badge-red   {color:var(--red);  background:var(--red-bg);  border-color:var(--red-bd)}
+.badge-amber {color:var(--amber);background:var(--amber-bg);border-color:var(--amber-bd)}
+.badge-green {color:var(--green);background:var(--green-bg);border-color:var(--green-bd)}
+.badge-cyan  {color:var(--cyan); background:var(--cyan-bg); border-color:var(--cyan-bd)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .page-wrap{padding:14px}
+  .nb-link{padding:5px 9px;font-size:12px}
+  .nb-sub{display:none}
+}
+@media(max-width:520px){
+  .nb-links .nb-link:nth-child(n+4){display:none}
+  .nb-status span:not(.nb-dot){display:none}
+}
+{% block extra_styles %}{% endblock %}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="/" class="nb-brand">
+    <div class="nb-logo">⚡</div>
+    <div>
+      <div class="nb-name">RIFT 2026</div>
+      <div class="nb-sub">Financial Forensics</div>
+    </div>
+  </a>
+  <div class="nb-links">
+    <a href="/"            class="nb-link {% if active=='home'      %}active{% endif %}">Home</a>
+    <a href="/dashboard"   class="nb-link {% if active=='dashboard' %}active{% endif %}">Dashboard</a>
+    <a href="/rings"       class="nb-link {% if active=='rings'     %}active{% endif %}">Rings</a>
+    <a href="/analytics"   class="nb-link {% if active=='analytics' %}active{% endif %}">Analytics</a>
+    <a href="/history"     class="nb-link {% if active=='history'   %}active{% endif %}">History</a>
+  </div>
+  <div class="nb-right">
+    <div class="nb-status" id="nb-status">
+      <div class="nb-dot nb-dot-red" id="nb-dot"></div>
+      <span id="nb-status-text">No Data</span>
+    </div>
+  </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+<!-- Shared: check sessionStorage and update nav status -->
+<script>
+(function(){
+  try{
+    const d = sessionStorage.getItem('riftResult');
+    if(d){
+      const dot = document.getElementById('nb-dot');
+      const txt = document.getElementById('nb-status-text');
+      if(dot){ dot.classList.remove('nb-dot-red'); }
+      if(txt){ txt.textContent = 'Analysis Active'; }
+    }
+  }catch(e){}
+})();
+</script>
+{% block body_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% set active = "history" %}
+{% block title %}History — RIFT 2026{% endblock %}
+
+{% block extra_styles %}
+.history-toolbar{display:flex;align-items:center;gap:8px}
+.hist-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.12s}
+.hist-row:hover{background:var(--card2)}
+.hist-row:last-child{border-bottom:none}
+.hist-icon{width:36px;height:36px;border-radius:9px;background:var(--red-bg);border:1px solid var(--red-bd);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.hist-info{flex:1;min-width:0}
+.hist-name{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text1);margin-bottom:3px}
+.hist-meta{font-size:11px;color:var(--text3)}
+.hist-stats{display:flex;gap:12px;flex-shrink:0}
+.hstat{text-align:center}
+.hstat-val{font-family:var(--mono);font-size:14px;font-weight:700;line-height:1}
+.hstat-lbl{font-size:10px;color:var(--text3);margin-top:2px}
+.hist-actions{display:flex;gap:6px;flex-shrink:0}
+.empty-state{padding:48px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3);line-height:2}
+.confirm-del{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center}
+.confirm-del.show{display:flex}
+.confirm-box{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:24px;width:320px;text-align:center}
+.confirm-box h3{font-size:15px;font-weight:700;margin-bottom:8px}
+.confirm-box p{font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.6}
+.confirm-btns{display:flex;gap:8px;justify-content:center}
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <div class="page-header">
+    <div class="page-title"><span class="page-title-icon">🕐</span> History</div>
+    <div class="history-toolbar">
+      <span id="hist-count" style="font-family:var(--mono);font-size:11px;color:var(--text3)"></span>
+      <button class="btn btn-ghost" id="btn-clear-all" style="display:none">🗑 Clear All</button>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <div id="hist-list">
+      <div class="empty-state">No analysis history yet.<br/>
+        Results are saved automatically after each run.<br/>
+        <a href="/analyze" style="color:var(--cyan)">Upload a CSV</a> to get started.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm delete dialog -->
+<div class="confirm-del" id="confirm-del">
+  <div class="confirm-box">
+    <h3>Delete this run?</h3>
+    <p>This will remove the analysis from your history. You cannot undo this.</p>
+    <div class="confirm-btns">
+      <button class="btn btn-ghost" id="confirm-cancel">Cancel</button>
+      <button class="btn btn-red" id="confirm-ok">Delete</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+<script>
+(function(){
+  const HIST_KEY = 'riftHistory';
+  let deleteIndex = null;
+
+  function loadHistory(){
+    try{ return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); }
+    catch(e){ return []; }
+  }
+  function saveHistory(h){ localStorage.setItem(HIST_KEY, JSON.stringify(h)); }
+
+  function nColor(s){if(s>=75)return'#ef4444';if(s>=40)return'#f59e0b';return'#10b981'}
+
+  function renderHistory(){
+    const hist = loadHistory();
+    const list = document.getElementById('hist-list');
+    const countEl = document.getElementById('hist-count');
+    const clearBtn = document.getElementById('btn-clear-all');
+
+    countEl.textContent = `${hist.length} run${hist.length!==1?'s':''}`;
+    clearBtn.style.display = hist.length ? 'inline-flex' : 'none';
+
+    if(!hist.length){
+      list.innerHTML = `<div class="empty-state">No analysis history yet.<br/>Results are saved automatically after each run.<br/><a href="/analyze" style="color:var(--cyan)">Upload a CSV</a> to get started.</div>`;
+      return;
+    }
+
+    list.innerHTML = hist.map((run, idx)=>{
+      const s = run.summary;
+      const sc = nColor(run.topScore || 0);
+      const date = new Date(run.timestamp).toLocaleString();
+      return `<div class="hist-row" onclick="loadRun(${idx})">
+        <div class="hist-icon">📊</div>
+        <div class="hist-info">
+          <div class="hist-name">${run.filename || 'Analysis #'+(hist.length-idx)}</div>
+          <div class="hist-meta">${date}</div>
+        </div>
+        <div class="hist-stats">
+          <div class="hstat"><div class="hstat-val" style="color:var(--red)">${s.suspicious_accounts_flagged}</div><div class="hstat-lbl">Suspicious</div></div>
+          <div class="hstat"><div class="hstat-val" style="color:var(--amber)">${s.fraud_rings_detected}</div><div class="hstat-lbl">Rings</div></div>
+          <div class="hstat"><div class="hstat-val" style="color:var(--cyan)">${s.total_accounts_analyzed}</div><div class="hstat-lbl">Accounts</div></div>
+        </div>
+        <div class="hist-actions" onclick="event.stopPropagation()">
+          <button class="btn btn-ghost" style="font-size:10px;padding:5px 10px" onclick="loadRun(${idx})">Load</button>
+          <button class="btn btn-ghost" style="font-size:10px;padding:5px 10px;color:var(--red)" onclick="askDelete(${idx})">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  window.loadRun = function(idx){
+    const hist = loadHistory();
+    if(!hist[idx]) return;
+    sessionStorage.setItem('riftResult', JSON.stringify(hist[idx].data));
+    window.location.href = '/dashboard';
+  };
+
+  window.askDelete = function(idx){
+    deleteIndex = idx;
+    document.getElementById('confirm-del').classList.add('show');
+  };
+
+  document.getElementById('confirm-cancel').onclick = ()=>{
+    document.getElementById('confirm-del').classList.remove('show');
+    deleteIndex = null;
+  };
+
+  document.getElementById('confirm-ok').onclick = ()=>{
+    if(deleteIndex !== null){
+      const hist = loadHistory();
+      hist.splice(deleteIndex, 1);
+      saveHistory(hist);
+      renderHistory();
+    }
+    document.getElementById('confirm-del').classList.remove('show');
+    deleteIndex = null;
+  };
+
+  document.getElementById('btn-clear-all').onclick = ()=>{
+    if(confirm('Clear all history? This cannot be undone.')){
+      saveHistory([]);
+      renderHistory();
+    }
+  };
+
+  // Auto-save current session result to history if it's new
+  try{
+    const current = sessionStorage.getItem('riftResult');
+    if(current){
+      const parsed = JSON.parse(current);
+      const hist = loadHistory();
+      // Don't add duplicate (same processing_time_seconds = same run)
+      const alreadySaved = hist.some(h => h.summary.processing_time_seconds === parsed.summary.processing_time_seconds
+                                        && h.summary.total_accounts_analyzed === parsed.summary.total_accounts_analyzed);
+      if(!alreadySaved){
+        const fname = sessionStorage.getItem('riftFilename') || 'Unknown file';
+        hist.unshift({
+          timestamp: Date.now(),
+          filename: fname,
+          summary: parsed.summary,
+          topScore: (parsed.suspicious_accounts[0] || {}).suspicion_score || 0,
+          data: parsed,
+        });
+        // Keep max 20 entries
+        saveHistory(hist.slice(0, 20));
+      }
+    }
+  }catch(e){}
+
+  renderHistory();
+})();
+</script>
+{% endblock %}

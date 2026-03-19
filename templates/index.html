@@ -1,138 +1,133 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RIFT 2026 — Money Muling Detection Engine</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
-</head>
-<body>
+{% extends "base.html" %}
+{% set active = "home" %}
+{% block title %}Home — RIFT 2026{% endblock %}
 
-  <nav class="navbar">
-    <div class="nav-logo">
-      <div class="nav-logo-dot"></div>
-      RIFT//2026
-    </div>
-    <ul class="nav-links">
-      <li><a href="#upload">Upload</a></li>
-      <li><a href="#algorithms">Algorithms</a></li>
-      <li><a href="/dashboard" class="nav-cta">Open Dashboard →</a></li>
-    </ul>
-  </nav>
+{% block extra_styles %}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 16px}
+.stat-val{font-family:var(--mono);font-size:28px;font-weight:700;line-height:1;margin-bottom:5px}
+.stat-lbl{font-size:12px;color:var(--text2)}
+.stat-sub{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:3px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.acct-row{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:7px;background:var(--card2);border:1px solid var(--border);margin-bottom:6px;cursor:pointer;transition:border-color 0.15s}
+.acct-row:last-child{margin-bottom:0}
+.acct-row:hover{border-color:var(--border2)}
+.acct-id{font-family:var(--mono);font-size:11px;color:var(--text1)}
+.acct-pat{font-size:10px;color:var(--text3);margin-top:2px}
+.br-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.br-row:last-child{margin-bottom:0}
+.br-lbl{font-size:11px;color:var(--text2);width:80px;flex-shrink:0}
+.br-track{flex:1;height:6px;background:var(--card2);border-radius:3px;overflow:hidden}
+.br-fill{height:100%;border-radius:3px;transition:width 0.8s ease}
+.br-val{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text1);width:26px;text-align:right}
+.empty-state{padding:32px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3);line-height:2}
+.upload-cta{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:10px 20px;background:var(--red);color:#fff;border:none;border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;transition:all 0.15s}
+.upload-cta:hover{background:#dc2626;box-shadow:0 0 16px rgba(239,68,68,0.3)}
+@media(max-width:900px){.stat-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.two-col{grid-template-columns:1fr}}
+{% endblock %}
 
-  <section class="hero">
-    <div class="hero-eyebrow">
-      <div class="hero-eyebrow-dot"></div>
-      Graph Intelligence · Financial Crime Detection
-    </div>
-    <h1>Follow <em>The</em><br/><strong>Money.</strong></h1>
-    <p class="hero-desc">
-      Upload transaction CSV data. Our graph-theoretic engine detects money muling rings,
-      smurfing behaviour, and layered shell networks in seconds.
-    </p>
-    <div class="hero-actions">
-      <a href="#upload" class="btn btn-primary">↑ Upload CSV</a>
-      <a href="#algorithms" class="btn btn-outline">View Algorithms</a>
-    </div>
-    <div class="stat-strip">
-      <div class="stat-strip-item">
-        <div class="stat-strip-val">O(V+E)</div>
-        <div class="stat-strip-lbl">Core Complexity</div>
-      </div>
-      <div class="stat-strip-item">
-        <div class="stat-strip-val">&lt;30s</div>
-        <div class="stat-strip-lbl">10K Transactions</div>
-      </div>
-      <div class="stat-strip-item">
-        <div class="stat-strip-val">4</div>
-        <div class="stat-strip-lbl">Detection Patterns</div>
-      </div>
-      <div class="stat-strip-item">
-        <div class="stat-strip-val">0–100</div>
-        <div class="stat-strip-lbl">Suspicion Score</div>
-      </div>
-    </div>
-  </section>
+{% block content %}
+<div class="page-wrap">
+  <div class="page-header">
+    <div class="page-title"><span class="page-title-icon">🏠</span> Home</div>
+    <a href="/analyze" class="btn btn-red">↑ New Analysis</a>
+  </div>
 
-  <section class="upload-section" id="upload">
-    <div class="section-label">Step 01</div>
-    <h2 class="section-title">Upload Transaction Data</h2>
-    <p class="section-desc">
-      Drop a CSV file below. The engine validates the schema, builds a directed graph,
-      and runs all four detection algorithms automatically.
-    </p>
-    <div class="drop-zone" id="drop-zone">
-      <div class="drop-icon">📂</div>
-      <div class="drop-title">Drop your CSV here</div>
-      <p class="drop-hint">or click to browse · max 10 MB</p>
-      <div class="drop-chosen" id="drop-chosen"></div>
-      <input type="file" id="file-input" accept=".csv"/>
+  <!-- Stat cards -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-val" id="hs-sus" style="color:var(--red)">—</div>
+      <div class="stat-lbl">Suspicious Accounts</div>
+      <div class="stat-sub">score ≥ 40</div>
     </div>
-    <div class="schema-row">
-      <span class="schema-label">Required columns:</span>
-      <span class="tag tag-blue">transaction_id</span>
-      <span class="tag tag-blue">sender_id</span>
-      <span class="tag tag-blue">receiver_id</span>
-      <span class="tag tag-blue">amount</span>
-      <span class="tag tag-blue">timestamp</span>
+    <div class="stat-card">
+      <div class="stat-val" id="hs-rng" style="color:var(--amber)">—</div>
+      <div class="stat-lbl">Fraud Rings</div>
+      <div class="stat-sub">all pattern types</div>
     </div>
-    <div class="error-box" id="error-box"></div>
-    <div class="progress-wrap" id="progress-wrap">
-      <div class="progress-header">
-        <span id="progress-text">Initializing…</span>
-        <span id="progress-pct">0%</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
+    <div class="stat-card">
+      <div class="stat-val" id="hs-acc" style="color:var(--cyan)">—</div>
+      <div class="stat-lbl">Total Accounts</div>
+      <div class="stat-sub">in transaction graph</div>
     </div>
-    <button class="analyze-btn" id="analyze-btn" disabled>
-      <span id="btn-label">▶ Run Analysis</span>
-    </button>
-  </section>
+    <div class="stat-card">
+      <div class="stat-val" id="hs-tim" style="color:var(--green)">—</div>
+      <div class="stat-lbl">Processing Time (s)</div>
+      <div class="stat-sub">end-to-end</div>
+    </div>
+  </div>
 
-  <section class="algo-section" id="algorithms">
-    <div class="algo-section-inner">
-      <div class="section-label">Detection Algorithms</div>
-      <h2 class="section-title">Four-Layer Detection</h2>
-      <p class="section-desc">
-        Each algorithm targets a distinct money laundering pattern,
-        combined into one unified suspicion score (0–100).
-      </p>
-      <div class="algo-grid">
-        <div class="algo-card">
-          <div class="algo-icon">🔄</div>
-          <div class="algo-name">Cycle Detection</div>
-          <p class="algo-desc">Detects circular fund routing (A→B→C→A) via Strongly Connected Components. Flags rings of 3+ accounts. Score: <strong>+35</strong></p>
-          <span class="algo-complexity">O(V + E)</span>
-        </div>
-        <div class="algo-card">
-          <div class="algo-icon">🐙</div>
-          <div class="algo-name">Smurfing Detection</div>
-          <p class="algo-desc">Fan-in (≥5 senders → 1 receiver) and fan-out (1 sender → ≥5 receivers) within a 72-hour temporal window. Score: <strong>+25</strong></p>
-          <span class="algo-complexity">O(T log T)</span>
-        </div>
-        <div class="algo-card">
-          <div class="algo-icon">🧅</div>
-          <div class="algo-name">Layered Shell Networks</div>
-          <p class="algo-desc">BFS through 3+ hop chains via low-activity shell accounts (≤3 total transactions). Score: <strong>+20</strong></p>
-          <span class="algo-complexity">O(V + E)</span>
-        </div>
-        <div class="algo-card">
-          <div class="algo-icon">🎯</div>
-          <div class="algo-name">Hub Node Analysis</div>
-          <p class="algo-desc">Flags accounts at the 95th percentile of combined degree. Legitimate merchants are auto-whitelisted. Score: <strong>+20</strong></p>
-          <span class="algo-complexity">O(V)</span>
+  <div class="two-col">
+    <!-- Top accounts -->
+    <div class="card">
+      <div class="card-title">Top Suspicious Accounts</div>
+      <div id="home-accounts">
+        <div class="empty-state">
+          No analysis data yet.<br/>
+          <a href="/analyze" class="upload-cta">↑ Upload CSV</a>
         </div>
       </div>
     </div>
-  </section>
 
-  <footer class="footer">
-    <span>RIFT 2026 · Graph-Based Financial Crime Detection</span>
-    <span>NetworkX · Flask · Cytoscape.js</span>
-  </footer>
+    <!-- Ring breakdown -->
+    <div class="card">
+      <div class="card-title">Detection Breakdown</div>
+      <div id="home-breakdown">
+        <div class="empty-state">No data yet.</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
 
-  <script src="{{ url_for('static', filename='js/index.js') }}"></script>
-</body>
-</html>
+{% block body_scripts %}
+<script>
+(function(){
+  function nColor(s){if(s>=75)return'#ef4444';if(s>=40)return'#f59e0b';if(s>0)return'#10b981';return'#64748b'}
+  function badge(s){
+    if(s>=75)return`<span class="badge badge-red">${s.toFixed(0)}</span>`;
+    if(s>=40)return`<span class="badge badge-amber">${s.toFixed(0)}</span>`;
+    return`<span class="badge badge-green">${s.toFixed(0)}</span>`;
+  }
+  try{
+    const raw = sessionStorage.getItem('riftResult');
+    if(!raw) return;
+    const d = JSON.parse(raw);
+    const s = d.summary;
+    document.getElementById('hs-sus').textContent = s.suspicious_accounts_flagged;
+    document.getElementById('hs-rng').textContent = s.fraud_rings_detected;
+    document.getElementById('hs-acc').textContent = s.total_accounts_analyzed;
+    document.getElementById('hs-tim').textContent = s.processing_time_seconds;
+
+    // Accounts
+    const accts = d.suspicious_accounts.slice(0,8);
+    document.getElementById('home-accounts').innerHTML = accts.length
+      ? accts.map(a=>`
+          <div class="acct-row" onclick="location.href='/dashboard'">
+            <div>
+              <div class="acct-id">${a.account_id}</div>
+              <div class="acct-pat">${(a.detected_patterns||[]).slice(0,2).join(', ')||'—'}</div>
+            </div>
+            ${badge(a.suspicion_score)}
+          </div>`).join('')
+      : '<div class="empty-state">No suspicious accounts detected.</div>';
+
+    // Breakdown
+    const max = Math.max(s.cycle_rings,s.smurfing_rings,s.layering_rings,s.hub_nodes,1);
+    const rows = [
+      ['Cycles',   s.cycle_rings,    '#06b6d4'],
+      ['Smurfing', s.smurfing_rings, '#ef4444'],
+      ['Layering', s.layering_rings, '#f59e0b'],
+      ['Hubs',     s.hub_nodes,      '#8b5cf6'],
+    ];
+    document.getElementById('home-breakdown').innerHTML = rows.map(([l,v,c])=>`
+      <div class="br-row">
+        <span class="br-lbl">${l}</span>
+        <div class="br-track"><div class="br-fill" style="width:${(v/max*100).toFixed(1)}%;background:${c}"></div></div>
+        <span class="br-val">${v}</span>
+      </div>`).join('');
+  }catch(e){ console.error(e); }
+})();
+</script>
+{% endblock %}

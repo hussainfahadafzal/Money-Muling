@@ -1,697 +1,213 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>RIFT 2026 — Financial Forensics</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet"/>
+{% extends "base.html" %}
+{% set active = "dashboard" %}
+{% block title %}Dashboard — RIFT 2026{% endblock %}
+
+{% block head_scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:        #0f0f13;
-  --bg2:       #111118;
-  --card:      #1a1a24;
-  --card2:     #20202c;
-  --border:    rgba(255,255,255,0.07);
-  --border2:   rgba(255,255,255,0.13);
-  --text1:     #f0f4ff;
-  --text2:     #8892a4;
-  --text3:     #444860;
-  --red:       #ef4444;
-  --red2:      #f87171;
-  --red-bg:    rgba(239,68,68,0.1);
-  --red-bd:    rgba(239,68,68,0.25);
-  --cyan:      #06b6d4;
-  --cyan-bg:   rgba(6,182,212,0.1);
-  --cyan-bd:   rgba(6,182,212,0.25);
-  --amber:     #f59e0b;
-  --amber-bg:  rgba(245,158,11,0.1);
-  --amber-bd:  rgba(245,158,11,0.25);
-  --green:     #10b981;
-  --green-bg:  rgba(16,185,129,0.1);
-  --green-bd:  rgba(16,185,129,0.25);
-  --blue:      #3b82f6;
-  --blue-bg:   rgba(59,130,246,0.12);
-  --orange:    #f97316;
-  --purple:    #8b5cf6;
-  --sans:'Inter',sans-serif;
-  --mono:'JetBrains Mono',monospace;
-}
-html,body{height:100%;overflow:hidden;font-family:var(--sans);background:var(--bg);color:var(--text1);-webkit-font-smoothing:antialiased}
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--card2);border-radius:2px}
+{% endblock %}
 
-/* ── SHELL ── */
-.shell{display:flex;flex-direction:column;height:100vh}
-
-/* ══ TOP NAVBAR (MuleNet style) ══ */
-.navbar{
-  height:54px;flex-shrink:0;
-  background:var(--card);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;
-  padding:0 20px;gap:0;
-  z-index:100;
-}
-
-.nb-brand{
-  display:flex;align-items:center;gap:10px;
-  margin-right:32px;flex-shrink:0;
-}
-.nb-logo{
-  width:34px;height:34px;border-radius:9px;
-  background:var(--red);
-  display:flex;align-items:center;justify-content:center;
-  font-size:16px;flex-shrink:0;
-}
-.nb-brand-text{}
-.nb-brand-name{font-size:14px;font-weight:700;color:var(--text1);line-height:1.1}
-.nb-brand-sub{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase}
-
-/* Nav links */
-.nb-links{display:flex;align-items:center;gap:2px;flex:1}
-.nb-link{
-  font-size:13px;font-weight:500;color:var(--text2);
-  padding:6px 14px;border-radius:7px;
-  border:none;background:transparent;cursor:pointer;
-  transition:all 0.15s;white-space:nowrap;
-}
-.nb-link:hover{color:var(--text1);background:var(--card2)}
-.nb-link.active{color:var(--red);background:var(--red-bg)}
-
-/* Right badges */
-.nb-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.nb-status{
-  display:flex;align-items:center;gap:6px;
-  font-family:var(--mono);font-size:11px;font-weight:600;
-  padding:5px 12px;border-radius:100px;
-  background:var(--green-bg);color:var(--green);
-  border:1px solid var(--green-bd);
-}
-.nb-status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-.nb-icon-btn{
-  width:34px;height:34px;border-radius:8px;border:1px solid var(--border);
-  background:transparent;color:var(--text2);cursor:pointer;font-size:15px;
-  display:flex;align-items:center;justify-content:center;transition:all 0.15s;
-}
-.nb-icon-btn:hover{background:var(--card2);color:var(--text1)}
-
-/* ══ PAGE CONTENT ══ */
-.pages{flex:1;overflow:hidden;position:relative}
-.page{display:none;height:100%;overflow-y:auto;padding:24px}
-.page.active{display:block}
-
-/* Page header */
-.page-header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
-.page-icon{font-size:22px;opacity:0.85}
-.page-title{font-size:24px;font-weight:700;letter-spacing:-0.02em}
-
-/* ══ CARDS ══ */
-.card{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:14px;padding:20px;
-}
-.card-title{font-size:13px;font-weight:600;color:var(--text1);margin-bottom:16px}
-
-/* 2×2 chart grid */
-.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.chart-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;min-height:280px;display:flex;flex-direction:column}
-.chart-card-title{font-size:13px;font-weight:600;color:var(--text1);margin-bottom:16px;flex-shrink:0}
-.chart-wrap{flex:1;position:relative;min-height:200px}
-
-/* ══ HOME PAGE ══ */
-.home-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-.home-stat{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:12px;padding:18px 16px;
-}
-.hs-val{font-family:var(--mono);font-size:28px;font-weight:700;line-height:1;margin-bottom:6px}
-.hs-lbl{font-size:12px;color:var(--text2)}
-.hs-sub{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:4px}
-
-.home-two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-
-/* Recent activity list */
-.activity-list{display:flex;flex-direction:column;gap:8px}
-.activity-item{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 12px;border-radius:8px;background:var(--card2);
-  border:1px solid var(--border);
-}
-.ai-left{display:flex;align-items:center;gap:10px}
-.ai-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.ai-text{font-family:var(--mono);font-size:11px;color:var(--text1)}
-.ai-sub{font-size:10px;color:var(--text3);margin-top:1px}
-.ai-badge{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;border:1px solid}
-
-/* ══ ANALYZE PAGE ══ */
-.upload-card{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:14px;padding:32px;max-width:680px;margin:0 auto;
-}
-.drop-zone{
-  border:2px dashed var(--border2);border-radius:12px;
-  padding:44px 24px;text-align:center;cursor:pointer;transition:all 0.2s;
-  position:relative;overflow:hidden;
-}
-.drop-zone::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at 50% 110%,rgba(239,68,68,0.05),transparent 65%);
-  pointer-events:none;
-}
-.drop-zone:hover,.drop-zone.over{border-color:var(--red);background:rgba(239,68,68,0.04)}
-.dz-icon{width:52px;height:52px;border-radius:14px;background:var(--red-bg);border:1px solid var(--red-bd);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 16px}
-.dz-title{font-size:15px;font-weight:600;margin-bottom:6px}
-.dz-hint{font-family:var(--mono);font-size:11px;color:var(--text3)}
-.dz-chosen{margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--cyan);display:none}
-.dz-chosen.show{display:block}
-#file-input{display:none}
-
-.schema-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:16px}
-.schema-lbl{font-size:11px;color:var(--text3)}
-.schema-tag{font-family:var(--mono);font-size:10px;font-weight:600;padding:3px 9px;border-radius:5px;background:var(--cyan-bg);color:var(--cyan);border:1px solid var(--cyan-bd)}
-
-.error-box{margin-top:12px;padding:11px 14px;border-radius:8px;background:var(--red-bg);border:1px solid var(--red-bd);font-family:var(--mono);font-size:12px;color:var(--red);display:none}
-.error-box.show{display:block}
-
-.progress-wrap{margin-top:16px;display:none}
-.progress-wrap.show{display:block}
-.progress-header{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:8px}
-.progress-track{height:4px;background:var(--card2);border-radius:2px;overflow:hidden}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--purple));border-radius:2px;transition:width 0.35s ease}
-
-.analyze-btn{
-  width:100%;margin-top:16px;padding:13px;
-  background:var(--red);color:#fff;
-  font-family:var(--mono);font-size:13px;font-weight:700;
-  border:none;border-radius:10px;cursor:pointer;transition:all 0.15s;
-  display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:0.04em;
-}
-.analyze-btn:hover:not(:disabled){background:#dc2626;box-shadow:0 0 24px rgba(239,68,68,0.35);transform:translateY(-1px)}
-.analyze-btn:disabled{opacity:0.35;cursor:not-allowed}
-
-/* ══ DASHBOARD (GRAPH) PAGE ══ */
-.dash-layout{display:grid;grid-template-columns:1fr 280px;gap:16px;height:calc(100vh - 54px - 48px - 24px)}
+{% block extra_styles %}
+html,body{height:100%;overflow:hidden}
+.dash-shell{display:flex;flex-direction:column;height:calc(100vh - 52px)}
+.dash-body{display:grid;grid-template-columns:1fr 272px;flex:1;overflow:hidden;gap:0}
 
 /* Graph panel */
-.graph-panel{
-  background:var(--card);border:1px solid var(--border);border-radius:14px;
-  position:relative;overflow:hidden;
-}
-.graph-panel::before{
-  content:'';position:absolute;inset:0;
-  background-image:radial-gradient(circle,rgba(239,68,68,0.04) 1px,transparent 1px);
-  background-size:26px 26px;pointer-events:none;z-index:0;
-}
-.graph-panel::after{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 75% 70% at 50% 50%,transparent 45%,rgba(15,15,19,0.6) 100%);
-  pointer-events:none;z-index:2;
-}
+.graph-panel{position:relative;overflow:hidden;background:var(--bg2)}
+.graph-panel::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(239,68,68,0.04) 1px,transparent 1px);background-size:26px 26px;pointer-events:none;z-index:0}
+.graph-panel::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 75% 70% at 50% 50%,transparent 45%,rgba(15,15,19,0.55) 100%);pointer-events:none;z-index:2}
 #cy{position:absolute;inset:0;z-index:1}
 
-.g-toolbar{position:absolute;top:12px;left:12px;z-index:10;display:flex;gap:6px}
-.g-btn{
-  font-family:var(--mono);font-size:10px;font-weight:600;
-  padding:6px 11px;border-radius:7px;
-  background:rgba(26,26,36,0.9);backdrop-filter:blur(8px);
-  border:1px solid var(--border2);color:var(--text2);
-  cursor:pointer;transition:all 0.15s;
-}
+/* Toolbar */
+.g-toolbar{position:absolute;top:12px;left:12px;z-index:10;display:flex;gap:6px;flex-wrap:wrap}
+.g-btn{font-family:var(--mono);font-size:10px;font-weight:600;padding:6px 11px;border-radius:7px;background:rgba(26,26,36,0.9);backdrop-filter:blur(8px);border:1px solid var(--border2);color:var(--text2);cursor:pointer;transition:all 0.15s}
 .g-btn:hover{color:var(--text1);border-color:var(--red);background:var(--red-bg)}
 
-.g-search{
-  position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:10;
-  background:rgba(26,26,36,0.92);backdrop-filter:blur(8px);
-  border:1px solid var(--border2);border-radius:8px;
-  display:flex;align-items:center;overflow:hidden;
-}
+/* Search */
+.g-search{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:10;background:rgba(26,26,36,0.92);backdrop-filter:blur(8px);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;overflow:hidden}
 .g-search-ico{padding:0 10px;color:var(--text3);font-size:14px}
 .g-search input{border:none;outline:none;background:transparent;font-family:var(--mono);font-size:11px;color:var(--text1);padding:8px 12px 8px 0;width:200px}
 .g-search input::placeholder{color:var(--text3)}
 
-.g-legend{
-  position:absolute;bottom:12px;left:12px;z-index:10;
-  background:rgba(26,26,36,0.9);backdrop-filter:blur(8px);
-  border:1px solid var(--border);border-radius:9px;
-  padding:9px 14px;display:flex;gap:14px;
-}
+/* Legend */
+.g-legend{position:absolute;bottom:12px;left:12px;z-index:10;background:rgba(26,26,36,0.9);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:9px;padding:9px 14px;display:flex;gap:14px;align-items:center}
 .leg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)}
 .leg-dot{width:10px;height:10px;border-radius:50%}
-
-.g-badge{
-  position:absolute;bottom:12px;right:12px;z-index:10;
-  background:rgba(26,26,36,0.9);backdrop-filter:blur(8px);
-  border:1px solid var(--border);border-radius:7px;
-  padding:7px 12px;font-family:var(--mono);font-size:10px;color:var(--text3);
-}
+.g-badge{position:absolute;bottom:12px;right:12px;z-index:10;background:rgba(26,26,36,0.9);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:7px;padding:7px 12px;font-family:var(--mono);font-size:10px;color:var(--text3)}
 .g-badge b{color:var(--text1)}
 
-.g-empty{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
-.g-empty-icon{font-size:52px;opacity:0.1}
+/* Empty state */
+.g-empty{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.g-empty-icon{font-size:50px;opacity:0.1}
 .g-empty-text{font-family:var(--mono);font-size:12px;color:var(--text3);text-align:center;line-height:2}
 .g-empty-text a{color:var(--cyan);text-decoration:none}
 
-/* Right detail panel */
-.detail-panel{display:flex;flex-direction:column;gap:12px;overflow-y:auto}
-
-.detail-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+/* Right panel */
+.right-panel{border-left:1px solid var(--border);background:var(--card);display:flex;flex-direction:column;overflow:hidden}
+.rp-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.rp-title{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text3)}
 
 /* Tabs */
-.tabs{display:flex;border-bottom:1px solid var(--border)}
-.tab{flex:1;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:11px 6px;background:transparent;border:none;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;text-align:center}
+.tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.tab{flex:1;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:11px 6px;background:transparent;border:none;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;text-align:center}
 .tab.active{color:var(--red);border-bottom-color:var(--red);background:var(--red-bg)}
 .tab:hover:not(.active){color:var(--text2);background:var(--card2)}
-
-.tab-pane{display:none;flex-direction:column}
+.tab-pane{display:none;flex-direction:column;flex:1;overflow:hidden}
 .tab-pane.active{display:flex}
 
 /* Node detail */
-.node-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px 16px}
-.ne-icon{font-size:36px;opacity:0.1}
-.ne-text{font-family:var(--mono);font-size:10px;color:var(--text3);text-align:center;line-height:2}
-
-.node-detail{display:none;flex-direction:column}
-.node-detail.show{display:flex}
-
+.nd-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px 16px;flex:1}
+.nd-empty-icon{font-size:36px;opacity:0.1}
+.nd-empty-text{font-family:var(--mono);font-size:10px;color:var(--text3);text-align:center;line-height:2}
+.nd-content{display:none;flex-direction:column;overflow-y:auto}
+.nd-content.show{display:flex}
 .nd-hero{padding:14px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start}
 .donut{flex-shrink:0;width:68px;height:68px;position:relative}
 .donut svg{transform:rotate(-90deg)}
 .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.donut-val{font-family:var(--mono);font-size:15px;font-weight:700;line-height:1}
+.donut-val{font-family:var(--mono);font-size:16px;font-weight:700;line-height:1}
 .donut-lbl{font-size:8px;color:var(--text3);letter-spacing:0.06em;margin-top:1px}
-
 .nd-info{flex:1;min-width:0}
-.nd-id-text{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text1);word-break:break-all;margin-bottom:9px;line-height:1.5}
+.nd-id{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text1);word-break:break-all;margin-bottom:9px;line-height:1.5}
 .nd-meta{display:grid;grid-template-columns:1fr 1fr;gap:5px 10px}
-.nd-meta-item{display:flex;flex-direction:column;gap:1px}
-.nd-meta-key{font-size:9px;color:var(--text3)}
-.nd-meta-val{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text1)}
-
-.nd-risk{margin:10px 14px 0;padding:8px 12px;border-radius:7px;font-family:var(--mono);font-size:11px;font-weight:700;border:1px solid;display:flex;align-items:center;gap:7px;letter-spacing:0.04em}
-.risk-h{color:var(--red);background:var(--red-bg);border-color:var(--red-bd)}
+.nd-mk{font-size:9px;color:var(--text3)}
+.nd-mv{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text1)}
+.nd-risk{margin:10px 14px 0;padding:8px 12px;border-radius:7px;font-family:var(--mono);font-size:11px;font-weight:700;border:1px solid;display:flex;align-items:center;gap:7px}
+.risk-h{color:var(--red);  background:var(--red-bg);  border-color:var(--red-bd)}
 .risk-m{color:var(--amber);background:var(--amber-bg);border-color:var(--amber-bd)}
 .risk-l{color:var(--green);background:var(--green-bg);border-color:var(--green-bd)}
+.nd-pats{padding:10px 14px;border-top:1px solid var(--border);margin-top:10px}
+.nd-pats-title{font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:var(--text3);margin-bottom:7px}
+.nd-chips{display:flex;flex-wrap:wrap;gap:4px}
+.pc{font-family:var(--mono);font-size:9px;font-weight:600;padding:2px 7px;border-radius:4px;border:1px solid}
 
-.nd-patterns{padding:10px 14px;border-top:1px solid var(--border);margin-top:10px}
-.nd-pat-title{font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:var(--text3);margin-bottom:7px}
-.nd-pat-chips{display:flex;flex-wrap:wrap;gap:5px}
-.pc{font-family:var(--mono);font-size:9px;font-weight:600;padding:3px 7px;border-radius:4px;border:1px solid}
-
-/* Rings pane */
-.rings-pane{display:flex;flex-direction:column}
-.rings-filter{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;gap:5px;flex-wrap:wrap}
+/* Rings in right panel */
+.rings-filter{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0}
 .fchip{font-family:var(--mono);font-size:9px;font-weight:600;padding:3px 9px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;transition:all 0.13s}
 .fchip.active{background:var(--red-bg);color:var(--red);border-color:var(--red-bd)}
 .fchip:hover:not(.active){border-color:var(--border2);color:var(--text2)}
+.rings-list{flex:1;overflow-y:auto}
+.rcard{padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.12s}
+.rcard:hover{background:var(--card2)}
+.rcard:last-child{border-bottom:none}
+.rcard-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.rcard-id{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--cyan)}
+.rcard-score{font-family:var(--mono);font-size:10px;font-weight:700}
+.rcard-bot{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.rcard-type{font-family:var(--mono);font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;border:1px solid}
+.rcard-members{font-size:10px;color:var(--text3)}
+.rbar-track{height:3px;background:var(--card2);border-radius:2px;overflow:hidden}
+.rbar-fill{height:100%;border-radius:2px}
 
-.rings-scroll{max-height:320px;overflow-y:auto}
-.ring-card{padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.12s}
-.ring-card:hover{background:var(--card2)}
-.ring-card:last-child{border-bottom:none}
-.rc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.rc-id{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--cyan)}
-.rc-score{font-family:var(--mono);font-size:10px;font-weight:700}
-.rc-bot{display:flex;align-items:center;gap:7px;margin-bottom:5px}
-.rc-type{font-family:var(--mono);font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;border:1px solid}
-.rc-members{font-size:10px;color:var(--text3)}
-.rc-bar-track{height:3px;background:var(--card2);border-radius:2px;overflow:hidden}
-.rc-bar-fill{height:100%;border-radius:2px}
-
-/* ══ RINGS PAGE ══ */
-.rings-table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-th{text-align:left;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);padding:10px 14px;border-bottom:1px solid var(--border)}
-td{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;vertical-align:middle}
-tr:hover td{background:var(--card2)}
-.td-mono{font-family:var(--mono);font-size:11px}
-.td-cyan{color:var(--cyan);font-weight:700}
-.badge{font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;border:1px solid}
-.badge-red   {color:var(--red);  background:var(--red-bg);  border-color:var(--red-bd)}
-.badge-amber {color:var(--amber);background:var(--amber-bg);border-color:var(--amber-bd)}
-.badge-green {color:var(--green);background:var(--green-bg);border-color:var(--green-bd)}
-.badge-cyan  {color:var(--cyan); background:var(--cyan-bg); border-color:var(--cyan-bd)}
-
-/* ══ ANALYTICS PAGE (4-chart grid) ══ */
-/* same as chart-grid above */
-
-/* ══ HISTORY PAGE ══ */
-.history-empty{padding:48px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--text3);line-height:2}
-
-/* ══ HOW IT WORKS PAGE ══ */
-.how-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.how-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px}
-.how-num{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.15em;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
-.how-title{font-size:14px;font-weight:700;margin-bottom:8px}
-.how-desc{font-size:13px;color:var(--text2);line-height:1.7}
-.how-complexity{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;font-weight:700;padding:4px 10px;border-radius:5px;background:var(--cyan-bg);color:var(--cyan);border:1px solid var(--cyan-bd)}
-
-/* ══ RESPONSIVE ══ */
-@media(max-width:1024px){
-  .home-stats{grid-template-columns:1fr 1fr}
-  .chart-grid{grid-template-columns:1fr}
-  .how-grid{grid-template-columns:1fr}
-}
-@media(max-width:768px){
-  .nb-links .nb-link:not(.active):not(:last-child):not(:nth-last-child(2)){display:none}
-  .dash-layout{grid-template-columns:1fr;height:auto}
+/* Responsive */
+@media(max-width:900px){
+  html,body{height:auto;overflow:visible}
+  .dash-shell{height:auto}
+  .dash-body{grid-template-columns:1fr;height:auto}
   .graph-panel{height:60vw;min-height:280px}
-  .home-stats{grid-template-columns:1fr 1fr}
-  .home-two-col{grid-template-columns:1fr}
-  .nb-brand-sub{display:none}
-  .page{padding:16px}
+  .right-panel{border-left:none;border-top:1px solid var(--border);max-height:400px}
+  .g-search{display:none}
 }
-@media(max-width:480px){
-  .home-stats{grid-template-columns:1fr 1fr}
-  .nb-link{padding:5px 10px;font-size:12px}
-  .nb-status span:not(.nb-status-dot){display:none}
-}
-</style>
-</head>
-<body>
-<div class="shell">
+{% endblock %}
 
-  <!-- ══ NAVBAR ══ -->
-  <nav class="navbar">
-    <div class="nb-brand">
-      <div class="nb-logo">⚡</div>
-      <div class="nb-brand-text">
-        <div class="nb-brand-name">RIFT 2026</div>
-        <div class="nb-brand-sub">Financial Forensics</div>
+{% block content %}
+<div class="dash-shell">
+  <div class="dash-body">
+
+    <!-- Graph -->
+    <div class="graph-panel">
+      <div id="cy"></div>
+      <div class="g-toolbar">
+        <button class="g-btn" id="btn-fit">⊡ Fit</button>
+        <button class="g-btn" id="btn-all">All</button>
+        <button class="g-btn" id="btn-sus">⚠ Suspicious</button>
+        <button class="g-btn" id="btn-rings">⬡ Rings</button>
+      </div>
+      <div class="g-search">
+        <span class="g-search-ico">⌕</span>
+        <input id="g-search-input" type="text" placeholder="Search account ID…"/>
+      </div>
+      <div class="g-legend">
+        <div class="leg"><div class="leg-dot" style="background:#ef4444;box-shadow:0 0 5px rgba(239,68,68,0.6)"></div>High ≥75</div>
+        <div class="leg"><div class="leg-dot" style="background:#f59e0b;box-shadow:0 0 4px rgba(245,158,11,0.5)"></div>Medium</div>
+        <div class="leg"><div class="leg-dot" style="background:#10b981"></div>Low</div>
+        <div class="leg"><div class="leg-dot" style="background:#2a3a55"></div>Normal</div>
+        <div class="leg"><div class="leg-dot" style="background:transparent;border:2px solid #06b6d4"></div>Ring</div>
+      </div>
+      <div class="g-badge">Nodes <b id="g-n">—</b> &nbsp;·&nbsp; Edges <b id="g-e">—</b></div>
+      <div class="g-empty" id="g-empty">
+        <div class="g-empty-icon">🕸</div>
+        <div class="g-empty-text">No data loaded.<br/><a href="/analyze">Upload a CSV</a> to begin.</div>
       </div>
     </div>
 
-    <div class="nb-links">
-      <button class="nb-link active" data-page="home">Home</button>
-      <button class="nb-link" data-page="analyze">Analyze</button>
-      <button class="nb-link" data-page="dashboard">Dashboard</button>
-      <button class="nb-link" data-page="rings">Rings</button>
-      <button class="nb-link" data-page="analytics">Analytics</button>
-      <button class="nb-link" data-page="history">History</button>
-      <button class="nb-link" data-page="howit">How It Works</button>
-    </div>
-
-    <div class="nb-right">
-      <div class="nb-status" id="nb-status">
-        <div class="nb-status-dot"></div>
-        <span id="nb-status-text">Ready</span>
+    <!-- Right panel -->
+    <div class="right-panel">
+      <div class="rp-header">
+        <span class="rp-title">Inspector</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--text3)" id="rp-time"></span>
       </div>
-      <button class="nb-icon-btn" title="Toggle theme">☀</button>
-    </div>
-  </nav>
-
-  <!-- ══ PAGES ══ -->
-  <div class="pages">
-
-    <!-- HOME -->
-    <div class="page active" id="page-home">
-      <div class="page-header">
-        <span class="page-icon">🏠</span>
-        <h1 class="page-title">Home</h1>
+      <div class="tabs">
+        <button class="tab active" data-tab="t-node">Node</button>
+        <button class="tab" data-tab="t-rings">Rings</button>
       </div>
-      <div class="home-stats">
-        <div class="home-stat">
-          <div class="hs-val" id="hs-sus" style="color:var(--red)">—</div>
-          <div class="hs-lbl">Suspicious Accounts</div>
-          <div class="hs-sub">flagged ≥ 40 score</div>
-        </div>
-        <div class="home-stat">
-          <div class="hs-val" id="hs-rng" style="color:var(--amber)">—</div>
-          <div class="hs-lbl">Fraud Rings Detected</div>
-          <div class="hs-sub">all pattern types</div>
-        </div>
-        <div class="home-stat">
-          <div class="hs-val" id="hs-acc" style="color:var(--cyan)">—</div>
-          <div class="hs-lbl">Total Accounts</div>
-          <div class="hs-sub">in transaction graph</div>
-        </div>
-        <div class="home-stat">
-          <div class="hs-val" id="hs-tim" style="color:var(--green)">—</div>
-          <div class="hs-lbl">Processing Time (s)</div>
-          <div class="hs-sub">end-to-end analysis</div>
-        </div>
-      </div>
-      <div class="home-two-col">
-        <div class="card">
-          <div class="card-title">Top Suspicious Accounts</div>
-          <div class="activity-list" id="home-acct-list">
-            <div style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:8px 0">Upload a CSV to see results.</div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title">Detection Breakdown</div>
-          <div style="display:flex;flex-direction:column;gap:10px" id="home-breakdown">
-            <div style="font-family:var(--mono);font-size:11px;color:var(--text3)">No data yet.</div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- ANALYZE -->
-    <div class="page" id="page-analyze">
-      <div class="page-header">
-        <span class="page-icon">🔍</span>
-        <h1 class="page-title">Analyze</h1>
-      </div>
-      <div class="upload-card">
-        <div style="font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--red);margin-bottom:8px">Step 01</div>
-        <div style="font-size:20px;font-weight:700;margin-bottom:8px">Upload Transaction Data</div>
-        <div style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:20px">Drop a CSV file below. The engine validates the schema, builds a directed graph, and runs all four detection algorithms automatically.</div>
-
-        <div class="drop-zone" id="dsh-drop-zone">
-          <div class="dz-icon">📂</div>
-          <div class="dz-title">Drop your CSV here</div>
-          <p class="dz-hint">or click to browse · max 10 MB</p>
-          <div class="dz-chosen" id="dsh-drop-chosen"></div>
-          <input type="file" id="dsh-file-input" accept=".csv"/>
+      <!-- Node tab -->
+      <div class="tab-pane active" id="t-node">
+        <div class="nd-empty" id="nd-empty">
+          <div class="nd-empty-icon">🖱</div>
+          <div class="nd-empty-text">Click any node<br/>to inspect it.</div>
         </div>
-
-        <div class="schema-row">
-          <span class="schema-lbl">Required:</span>
-          <span class="schema-tag">transaction_id</span>
-          <span class="schema-tag">sender_id</span>
-          <span class="schema-tag">receiver_id</span>
-          <span class="schema-tag">amount</span>
-          <span class="schema-tag">timestamp</span>
-        </div>
-
-        <div class="error-box" id="dsh-error-box"></div>
-        <div class="progress-wrap" id="dsh-progress-wrap">
-          <div class="progress-header">
-            <span id="dsh-progress-text">Initializing…</span>
-            <span id="dsh-progress-pct">0%</span>
-          </div>
-          <div class="progress-track"><div class="progress-fill" id="dsh-progress-fill"></div></div>
-        </div>
-        <button class="analyze-btn" id="dsh-analyze-btn" disabled>
-          <span id="dsh-btn-label">▶ Run Analysis</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- DASHBOARD (GRAPH) -->
-    <div class="page" id="page-dashboard">
-      <div class="page-header">
-        <span class="page-icon">🕸</span>
-        <h1 class="page-title">Dashboard</h1>
-      </div>
-      <div class="dash-layout">
-
-        <!-- Graph -->
-        <div class="graph-panel">
-          <div id="cy"></div>
-          <div class="g-toolbar">
-            <button class="g-btn" id="btn-fit">⊡ Fit</button>
-            <button class="g-btn" id="btn-all">All</button>
-            <button class="g-btn" id="btn-sus2">⚠ Suspicious</button>
-            <button class="g-btn" id="btn-rings-only">⬡ Rings</button>
-          </div>
-          <div class="g-search">
-            <span class="g-search-ico">⌕</span>
-            <input id="g-search-input" type="text" placeholder="Search account ID…"/>
-          </div>
-          <div class="g-legend">
-            <div class="leg"><div class="leg-dot" style="background:#ef4444;box-shadow:0 0 5px rgba(239,68,68,0.6)"></div>High ≥75</div>
-            <div class="leg"><div class="leg-dot" style="background:#f59e0b;box-shadow:0 0 5px rgba(245,158,11,0.5)"></div>Med 40–74</div>
-            <div class="leg"><div class="leg-dot" style="background:#10b981"></div>Low</div>
-            <div class="leg"><div class="leg-dot" style="background:#2a3a55"></div>Normal</div>
-            <div class="leg"><div class="leg-dot" style="background:transparent;border:2px solid #06b6d4"></div>Ring</div>
-          </div>
-          <div class="g-badge">Nodes <b id="g-n">—</b> &nbsp;·&nbsp; Edges <b id="g-e">—</b></div>
-          <div class="g-empty" id="g-empty">
-            <div class="g-empty-icon">🕸</div>
-            <div class="g-empty-text">No data loaded.<br/><a href="#" onclick="navTo('analyze')">Upload a CSV</a> to begin.</div>
-          </div>
-        </div>
-
-        <!-- Right detail -->
-        <div class="detail-panel">
-          <div class="detail-card">
-            <div class="tabs">
-              <button class="tab active" data-tab="t-node">Node</button>
-              <button class="tab" data-tab="t-rings">Rings</button>
-            </div>
-            <!-- Node tab -->
-            <div class="tab-pane active" id="t-node">
-              <div class="node-empty" id="nd-empty"><div class="ne-icon">🖱</div><div class="ne-text">Click a node<br/>to inspect it.</div></div>
-              <div class="node-detail" id="nd-detail">
-                <div class="nd-hero">
-                  <div class="donut">
-                    <svg width="68" height="68" viewBox="0 0 68 68">
-                      <circle cx="34" cy="34" r="26" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="7"/>
-                      <circle id="d-arc" cx="34" cy="34" r="26" fill="none" stroke="var(--red)" stroke-width="7"
-                        stroke-dasharray="163.4" stroke-dashoffset="163.4" stroke-linecap="round"
-                        style="transition:stroke-dashoffset 0.6s ease,stroke 0.2s"/>
-                    </svg>
-                    <div class="donut-center">
-                      <span class="donut-val" id="d-score">—</span>
-                      <span class="donut-lbl">SCORE</span>
-                    </div>
-                  </div>
-                  <div class="nd-info">
-                    <div class="nd-id-text" id="d-id">—</div>
-                    <div class="nd-meta">
-                      <div class="nd-meta-item"><span class="nd-meta-key">In-deg</span><span class="nd-meta-val" id="d-in">—</span></div>
-                      <div class="nd-meta-item"><span class="nd-meta-key">Out-deg</span><span class="nd-meta-val" id="d-out">—</span></div>
-                      <div class="nd-meta-item"><span class="nd-meta-key">Total</span><span class="nd-meta-val" id="d-tot">—</span></div>
-                      <div class="nd-meta-item"><span class="nd-meta-key">In ring</span><span class="nd-meta-val" id="d-ring">—</span></div>
-                    </div>
-                  </div>
-                </div>
-                <div style="padding:10px 14px 0"><div class="nd-risk" id="d-risk">—</div></div>
-                <div class="nd-patterns">
-                  <div class="nd-pat-title">Patterns</div>
-                  <div class="nd-pat-chips" id="d-pats"></div>
-                </div>
+        <div class="nd-content" id="nd-content">
+          <div class="nd-hero">
+            <div class="donut">
+              <svg width="68" height="68" viewBox="0 0 68 68">
+                <circle cx="34" cy="34" r="26" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="7"/>
+                <circle id="d-arc" cx="34" cy="34" r="26" fill="none" stroke="var(--red)" stroke-width="7"
+                  stroke-dasharray="163.4" stroke-dashoffset="163.4" stroke-linecap="round"
+                  style="transition:stroke-dashoffset 0.6s ease,stroke 0.2s"/>
+              </svg>
+              <div class="donut-center">
+                <span class="donut-val" id="d-score">—</span>
+                <span class="donut-lbl">SCORE</span>
               </div>
             </div>
-            <!-- Rings tab -->
-            <div class="tab-pane" id="t-rings">
-              <div class="rings-pane">
-                <div class="rings-filter">
-                  <button class="fchip active" data-filter="all">All</button>
-                  <button class="fchip" data-filter="cycle">Cycle</button>
-                  <button class="fchip" data-filter="fan_in">Fan-In</button>
-                  <button class="fchip" data-filter="fan_out">Fan-Out</button>
-                  <button class="fchip" data-filter="layering">Layer</button>
-                </div>
-                <div class="rings-scroll" id="rings-list">
-                  <div style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:20px;text-align:center">No data</div>
-                </div>
+            <div class="nd-info">
+              <div class="nd-id" id="d-id">—</div>
+              <div class="nd-meta">
+                <div><div class="nd-mk">In-degree</div><div class="nd-mv" id="d-in">—</div></div>
+                <div><div class="nd-mk">Out-degree</div><div class="nd-mv" id="d-out">—</div></div>
+                <div><div class="nd-mk">Total</div><div class="nd-mv" id="d-tot">—</div></div>
+                <div><div class="nd-mk">In ring</div><div class="nd-mv" id="d-ring">—</div></div>
               </div>
             </div>
           </div>
+          <div style="padding:10px 14px 0"><div class="nd-risk" id="d-risk">—</div></div>
+          <div class="nd-pats">
+            <div class="nd-pats-title">Detected Patterns</div>
+            <div class="nd-chips" id="d-pats"></div>
+          </div>
         </div>
-
       </div>
-    </div>
 
-    <!-- RINGS TABLE PAGE -->
-    <div class="page" id="page-rings">
-      <div class="page-header">
-        <span class="page-icon">⬡</span>
-        <h1 class="page-title">Rings</h1>
-      </div>
-      <div class="card">
-        <div class="rings-table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Ring ID</th>
-                <th>Pattern Type</th>
-                <th>Members</th>
-                <th>Risk Score</th>
-                <th>Member Accounts</th>
-              </tr>
-            </thead>
-            <tbody id="rings-table-body">
-              <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text3);font-family:var(--mono);font-size:11px">No data. Upload a CSV first.</td></tr>
-            </tbody>
-          </table>
+      <!-- Rings tab -->
+      <div class="tab-pane" id="t-rings">
+        <div class="rings-filter">
+          <button class="fchip active" data-filter="all">All</button>
+          <button class="fchip" data-filter="cycle">Cycle</button>
+          <button class="fchip" data-filter="fan_in">Fan-In</button>
+          <button class="fchip" data-filter="fan_out">Fan-Out</button>
+          <button class="fchip" data-filter="layering">Layer</button>
+        </div>
+        <div class="rings-list" id="rings-list">
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:20px;text-align:center">No data</div>
         </div>
       </div>
     </div>
 
-    <!-- ANALYTICS PAGE -->
-    <div class="page" id="page-analytics">
-      <div class="page-header">
-        <span class="page-icon">📊</span>
-        <h1 class="page-title">Analytics</h1>
-      </div>
-      <div class="chart-grid">
-        <div class="chart-card">
-          <div class="chart-card-title">Suspicion Score Distribution</div>
-          <div class="chart-wrap"><canvas id="chart-score-dist"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-card-title">Lifecycle Stages</div>
-          <div class="chart-wrap"><canvas id="chart-lifecycle"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-card-title">Top Detected Patterns</div>
-          <div class="chart-wrap"><canvas id="chart-patterns"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-card-title">Ring Size vs Risk Score</div>
-          <div class="chart-wrap"><canvas id="chart-scatter"></canvas></div>
-        </div>
-      </div>
-    </div>
+  </div>
+</div>
+{% endblock %}
 
-    <!-- HISTORY PAGE -->
-    <div class="page" id="page-history">
-      <div class="page-header">
-        <span class="page-icon">🕐</span>
-        <h1 class="page-title">History</h1>
-      </div>
-      <div class="card">
-        <div class="history-empty" id="history-list">
-          No analysis history yet. Results appear here after each run.
-        </div>
-      </div>
-    </div>
-
-    <!-- HOW IT WORKS PAGE -->
-    <div class="page" id="page-howit">
-      <div class="page-header">
-        <span class="page-icon">💡</span>
-        <h1 class="page-title">How It Works</h1>
-      </div>
-      <div class="how-grid">
-        <div class="how-card">
-          <div class="how-num">Algorithm 01</div>
-          <div class="how-title">🔄 Cycle Detection</div>
-          <div class="how-desc">Detects circular fund routing (A→B→C→A) using Tarjan's Strongly Connected Components algorithm. An SCC with ≥3 nodes means every member can reach every other — indicating a money loop. Suspicion score contribution: <strong>+35</strong></div>
-          <span class="how-complexity">O(V + E)</span>
-        </div>
-        <div class="how-card">
-          <div class="how-num">Algorithm 02</div>
-          <div class="how-title">🐙 Smurfing Detection</div>
-          <div class="how-desc">Identifies fan-in (≥5 senders → 1 receiver) and fan-out (1 sender → ≥5 receivers) within a 72-hour sliding window. Uses vectorized NumPy timestamp arithmetic for performance. Score contribution: <strong>+25</strong></div>
-          <span class="how-complexity">O(T log T)</span>
-        </div>
-        <div class="how-card">
-          <div class="how-num">Algorithm 03</div>
-          <div class="how-title">🧅 Layered Shell Networks</div>
-          <div class="how-desc">BFS from high-activity accounts through shell intermediaries (≤3 total transactions). Chains of 3+ hops through shells simulate how funds are obfuscated before reaching the final destination. Score: <strong>+20</strong></div>
-          <span class="how-complexity">O(V + E)</span>
-        </div>
-        <div class="how-card">
-          <div class="how-num">Algorithm 04</div>
-          <div class="how-title">🎯 Hub Node Analysis</div>
-          <div class="how-desc">Accounts at or above the 95th percentile of combined in+out degree are flagged as laundering hubs. Legitimate high-volume merchants are automatically whitelisted (degree ≥200, diversity ratio ≥60%). Score: <strong>+20</strong></div>
-          <span class="how-complexity">O(V)</span>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /pages -->
-</div><!-- /shell -->
-
+{% block body_scripts %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-</body>
-</html>
+{% endblock %}

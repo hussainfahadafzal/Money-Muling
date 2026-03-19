@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% set active = "analytics" %}
+{% block title %}Analytics — RIFT 2026{% endblock %}
+
+{% block head_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block extra_styles %}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.chart-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px}
+.chart-wrap{position:relative;height:200px}
+.empty-state{padding:48px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3);line-height:2}
+@media(max-width:700px){.chart-grid{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <div class="page-header">
+    <div class="page-title"><span class="page-title-icon">📊</span> Analytics</div>
+  </div>
+
+  <div id="no-data" style="display:none">
+    <div class="card">
+      <div class="empty-state">No analysis data yet. <a href="/analyze" style="color:var(--cyan)">Upload a CSV</a> to see charts.</div>
+    </div>
+  </div>
+
+  <div class="chart-grid" id="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">Suspicion Score Distribution</div>
+      <div class="chart-wrap"><canvas id="chart-dist"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Lifecycle Stages</div>
+      <div class="chart-wrap"><canvas id="chart-life"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Top Detected Patterns</div>
+      <div class="chart-wrap"><canvas id="chart-pats"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Ring Size vs Risk Score</div>
+      <div class="chart-wrap"><canvas id="chart-scatter"></canvas></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+<script>
+(function(){
+  const TOOLTIP = {
+    backgroundColor:'#1a1a24',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,
+    titleColor:'#f0f4ff',bodyColor:'#8892a4',
+    titleFont:{family:'JetBrains Mono',size:11},bodyFont:{family:'JetBrains Mono',size:10},
+    padding:10,
+  };
+  const GRID = {color:'rgba(255,255,255,0.05)'};
+  const TICK = {color:'#8892a4',font:{family:'JetBrains Mono',size:10}};
+
+  try{
+    const raw = sessionStorage.getItem('riftResult');
+    if(!raw){ document.getElementById('no-data').style.display='block'; document.getElementById('chart-grid').style.display='none'; return; }
+    const d = JSON.parse(raw);
+
+    Chart.defaults.color = '#8892a4';
+
+    // 1. Score distribution
+    const buckets = ['0-10','10-20','20-30','30-40','40-50','50-60','60-70','70-80','80-90','90-100'];
+    const counts = new Array(10).fill(0);
+    d.graph.nodes.forEach(n=>{ const i=Math.min(Math.floor((n.score||0)/10),9); counts[i]++; });
+    new Chart(document.getElementById('chart-dist'),{
+      type:'bar',
+      data:{labels:buckets,datasets:[{data:counts,backgroundColor:'#ef4444',borderRadius:4,borderSkipped:false}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:TOOLTIP},
+        scales:{x:{grid:GRID,ticks:TICK},y:{grid:GRID,ticks:TICK}}},
+    });
+
+    // 2. Lifecycle donut
+    const high = d.suspicious_accounts.filter(a=>a.suspicion_score>=75).length;
+    const med  = d.suspicious_accounts.filter(a=>a.suspicion_score>=40&&a.suspicion_score<75).length;
+    const norm = d.graph.nodes.length - high - med;
+    new Chart(document.getElementById('chart-life'),{
+      type:'doughnut',
+      data:{
+        labels:['High Risk','Medium Risk','Normal'],
+        datasets:[{data:[high,med,Math.max(norm,0)],backgroundColor:['#ef4444','#f59e0b','#2a3a55'],borderColor:'transparent',borderWidth:0,hoverOffset:6}],
+      },
+      options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+        plugins:{legend:{display:true,position:'right',labels:{color:'#8892a4',font:{family:'JetBrains Mono',size:10},boxWidth:10,padding:12}},tooltip:TOOLTIP}},
+    });
+
+    // 3. Top patterns
+    const pc = {};
+    d.suspicious_accounts.forEach(a=>{ (a.detected_patterns||[]).forEach(p=>{ pc[p]=(pc[p]||0)+1; }); });
+    const sorted = Object.entries(pc).sort((a,b)=>b[1]-a[1]).slice(0,7);
+    new Chart(document.getElementById('chart-pats'),{
+      type:'bar',
+      data:{labels:sorted.map(x=>x[0]),datasets:[{data:sorted.map(x=>x[1]),backgroundColor:'#3b82f6',borderRadius:4,borderSkipped:false}]},
+      options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+        plugins:{legend:{display:false},tooltip:TOOLTIP},
+        scales:{x:{grid:GRID,ticks:TICK},y:{grid:GRID,ticks:TICK}}},
+    });
+
+    // 4. Scatter
+    const pts = d.fraud_rings.map(r=>({x:r.member_accounts.length,y:r.risk_score}));
+    new Chart(document.getElementById('chart-scatter'),{
+      type:'scatter',
+      data:{datasets:[{data:pts,backgroundColor:'rgba(245,158,11,0.75)',pointRadius:5,pointHoverRadius:7}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:TOOLTIP},
+        scales:{
+          x:{title:{display:true,text:'Ring Size',color:'#8892a4',font:{family:'JetBrains Mono',size:10}},grid:GRID,ticks:TICK},
+          y:{title:{display:true,text:'Risk Score',color:'#8892a4',font:{family:'JetBrains Mono',size:10}},grid:GRID,ticks:TICK},
+        }},
+    });
+  }catch(e){ console.error(e); }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% set active = "analyze" %}
+{% block title %}Analyze — RIFT 2026{% endblock %}
+
+{% block extra_styles %}
+.analyze-wrap{max-width:620px;margin:0 auto}
+.drop-zone{border:2px dashed var(--border2);border-radius:12px;padding:40px 24px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;background:var(--card)}
+.drop-zone::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 110%,rgba(239,68,68,0.06),transparent 65%);pointer-events:none}
+.drop-zone:hover,.drop-zone.over{border-color:var(--red);background:rgba(239,68,68,0.03)}
+.dz-icon{width:50px;height:50px;border-radius:12px;background:var(--red-bg);border:1px solid var(--red-bd);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 14px}
+.dz-title{font-size:15px;font-weight:600;margin-bottom:5px}
+.dz-hint{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.dz-chosen{margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--cyan);display:none}
+.dz-chosen.show{display:block}
+#file-input{display:none}
+.schema-row{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:14px}
+.schema-lbl{font-size:11px;color:var(--text3)}
+.stag{font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--cyan-bg);color:var(--cyan);border:1px solid var(--cyan-bd)}
+.err-box{margin-top:12px;padding:10px 14px;border-radius:8px;background:var(--red-bg);border:1px solid var(--red-bd);font-family:var(--mono);font-size:11px;color:var(--red);display:none}
+.err-box.show{display:block}
+.prog-wrap{margin-top:14px;display:none}
+.prog-wrap.show{display:block}
+.prog-head{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:7px}
+.prog-track{height:4px;background:var(--card2);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--purple));border-radius:2px;transition:width 0.35s ease}
+.run-btn{width:100%;margin-top:14px;padding:13px;background:var(--red);color:#fff;font-family:var(--mono);font-size:13px;font-weight:700;border:none;border-radius:9px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:0.04em}
+.run-btn:hover:not(:disabled){background:#dc2626;box-shadow:0 0 24px rgba(239,68,68,0.35);transform:translateY(-1px)}
+.run-btn:disabled{opacity:0.35;cursor:not-allowed;transform:none}
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <div class="page-header">
+    <div class="page-title"><span class="page-title-icon">🔍</span> Analyze</div>
+  </div>
+
+  <div class="analyze-wrap">
+    <div class="card">
+      <div class="drop-zone" id="drop-zone">
+        <div class="dz-icon">📂</div>
+        <div class="dz-title">Drop your CSV here</div>
+        <p class="dz-hint">or click to browse · max 10 MB</p>
+        <div class="dz-chosen" id="drop-chosen"></div>
+        <input type="file" id="file-input" accept=".csv"/>
+      </div>
+
+      <div class="schema-row">
+        <span class="schema-lbl">Required:</span>
+        <span class="stag">transaction_id</span>
+        <span class="stag">sender_id</span>
+        <span class="stag">receiver_id</span>
+        <span class="stag">amount</span>
+        <span class="stag">timestamp</span>
+      </div>
+
+      <div class="err-box" id="error-box"></div>
+
+      <div class="prog-wrap" id="progress-wrap">
+        <div class="prog-head">
+          <span id="progress-text">Initializing…</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill" id="progress-fill"></div></div>
+      </div>
+
+      <button class="run-btn" id="analyze-btn" disabled>
+        <span id="btn-label">▶ Run Analysis</span>
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+{% endblock %}

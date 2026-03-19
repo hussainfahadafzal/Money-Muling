@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% set active = "rings" %}
+{% block title %}Rings — RIFT 2026{% endblock %}
+
+{% block extra_styles %}
+.rings-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filter-bar{display:flex;gap:5px;flex-wrap:wrap}
+.fchip{font-family:var(--mono);font-size:10px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;transition:all 0.13s}
+.fchip.active{background:var(--red-bg);color:var(--red);border-color:var(--red-bd)}
+.fchip:hover:not(.active){color:var(--text2);border-color:var(--border2);background:var(--card2)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);padding:10px 14px;border-bottom:1px solid var(--border)}
+td{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;vertical-align:middle}
+tr:hover td{background:var(--card2)}
+.td-mono{font-family:var(--mono);font-size:11px}
+.td-cyan{color:var(--cyan);font-weight:700}
+.members-cell{font-family:var(--mono);font-size:10px;color:var(--text2);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.risk-bar-wrap{display:flex;align-items:center;gap:8px;min-width:120px}
+.risk-bar-track{flex:1;height:5px;background:var(--card2);border-radius:3px;overflow:hidden}
+.risk-bar-fill{height:100%;border-radius:3px}
+.empty-state{padding:48px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3);line-height:2}
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <div class="page-header">
+    <div class="page-title"><span class="page-title-icon">⬡</span> Fraud Rings</div>
+    <div class="rings-toolbar">
+      <div class="filter-bar" id="filter-bar">
+        <button class="fchip active" data-filter="all">All</button>
+        <button class="fchip" data-filter="cycle">Cycle</button>
+        <button class="fchip" data-filter="fan_in">Fan-In</button>
+        <button class="fchip" data-filter="fan_out">Fan-Out</button>
+        <button class="fchip" data-filter="layering">Layering</button>
+      </div>
+      <span id="ring-count" style="font-family:var(--mono);font-size:11px;color:var(--text3)"></span>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Ring ID</th>
+            <th>Pattern</th>
+            <th>Members</th>
+            <th>Risk Score</th>
+            <th>Member Accounts</th>
+          </tr>
+        </thead>
+        <tbody id="rings-tbody">
+          <tr><td colspan="5" class="empty-state">No data. <a href="/analyze" style="color:var(--cyan)">Upload a CSV</a> first.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+<script>
+(function(){
+  function nColor(s){if(s>=75)return'#ef4444';if(s>=40)return'#f59e0b';if(s>0)return'#10b981';return'#64748b'}
+  function badge(s){
+    const cls=s>=75?'badge-red':s>=40?'badge-amber':'badge-green';
+    return`<span class="badge ${cls}">${s.toFixed(1)}</span>`;
+  }
+  function rtColor(t){
+    if(t==='cycle')   return'badge-cyan';
+    if(t.includes('fan')) return'badge-red';
+    if(t==='layering')return'badge-amber';
+    return'badge-cyan';
+  }
+
+  let allRings = [];
+
+  function renderTable(filter){
+    const tbody = document.getElementById('rings-tbody');
+    const f = filter==='all' ? allRings : allRings.filter(r=>r.pattern_type.includes(filter));
+    document.getElementById('ring-count').textContent = `${f.length} ring${f.length!==1?'s':''}`;
+    if(!f.length){
+      tbody.innerHTML=`<tr><td colspan="5" class="empty-state">No rings match this filter.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = f.map(r=>{
+      const c = nColor(r.risk_score);
+      const members = r.member_accounts.slice(0,4).join(', ')+(r.member_accounts.length>4?` +${r.member_accounts.length-4}`:'');
+      return`<tr>
+        <td class="td-mono td-cyan">${r.ring_id}</td>
+        <td><span class="badge ${rtColor(r.pattern_type)}">${r.pattern_type}</span></td>
+        <td class="td-mono">${r.member_accounts.length}</td>
+        <td>
+          <div class="risk-bar-wrap">
+            ${badge(r.risk_score)}
+            <div class="risk-bar-track"><div class="risk-bar-fill" style="width:${r.risk_score}%;background:${c}"></div></div>
+          </div>
+        </td>
+        <td class="members-cell">${members}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  try{
+    const raw = sessionStorage.getItem('riftResult');
+    if(raw){
+      const d = JSON.parse(raw);
+      allRings = d.fraud_rings || [];
+      renderTable('all');
+    }
+  }catch(e){ console.error(e); }
+
+  document.getElementById('filter-bar').addEventListener('click', e=>{
+    const chip = e.target.closest('.fchip');
+    if(!chip) return;
+    document.querySelectorAll('#filter-bar .fchip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    renderTable(chip.dataset.filter);
+  });
+})();
+</script>
+{% endblock %}

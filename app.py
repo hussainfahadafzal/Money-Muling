@@ -86,5 +86,8 @@ def download():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    # Local: python app.py  → http://127.0.0.1:5000
+    # Render: gunicorn app:app (PORT env var set automatically)
+    port = int(os.environ.get("PORT", 5000))
+    debug = os.environ.get("FLASK_ENV") != "production"
+    app.run(host="0.0.0.0", port=port, debug=debug)

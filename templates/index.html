@@ -7,259 +7,397 @@
 {% endblock %}
 
 {% block extra_styles %}
-/* ── Hero (no data state) ── */
+/* ─── HERO ─────────────────────────────────────────────── */
 .hero{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:72px 24px;text-align:center;
+  position:relative;overflow:hidden;
   background:var(--card);border:1px solid var(--border);border-radius:14px;
-  position:relative;overflow:hidden;margin-bottom:0;
+  padding:64px 24px 48px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;
+  margin-bottom:14px;
 }
 .hero::before{
   content:'';position:absolute;inset:0;
-  background-image:radial-gradient(circle,rgba(239,68,68,0.04) 1px,transparent 1px);
+  background-image:radial-gradient(circle,rgba(239,68,68,0.035) 1px,transparent 1px);
   background-size:28px 28px;pointer-events:none;
 }
 .hero::after{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(239,68,68,0.08),transparent 65%);
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(ellipse 90% 55% at 50% -5%,rgba(239,68,68,0.1),transparent 60%);
   pointer-events:none;
 }
 .hero>*{position:relative;z-index:1}
-.hero-eyebrow{
-  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;
+.hero-pill{
+  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;
   color:var(--red);background:var(--red-bg);border:1px solid var(--red-bd);
-  padding:5px 14px;border-radius:100px;margin-bottom:22px;
+  padding:5px 14px;border-radius:100px;margin-bottom:20px;
   display:inline-flex;align-items:center;gap:7px;
 }
-.hero-dot{width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 6px var(--red);animation:pulse 2s infinite}
-.hero h1{font-size:clamp(28px,4vw,48px);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:14px}
+.hero-pill-dot{width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 7px var(--red);animation:pulse 2s infinite}
+.hero h1{
+  font-size:clamp(30px,4.5vw,52px);font-weight:800;letter-spacing:-0.03em;
+  line-height:1.1;margin-bottom:14px;
+}
 .hero h1 em{font-style:normal;color:var(--red)}
-.hero-sub{font-size:15px;color:var(--text2);line-height:1.7;max-width:480px;margin-bottom:28px}
-.hero-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.hero-stats{display:flex;gap:28px;margin-top:36px;padding-top:28px;border-top:1px solid var(--border)}
-.hst{text-align:center}
-.hst-val{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--cyan);margin-bottom:4px}
-.hst-lbl{font-size:11px;color:var(--text3)}
+.hero-desc{font-size:15px;color:var(--text2);line-height:1.75;max-width:520px;margin-bottom:26px}
+.hero-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:36px}
+.hero-stats-strip{
+  display:flex;gap:0;width:100%;max-width:560px;
+  background:var(--card2);border:1px solid var(--border);border-radius:10px;overflow:hidden;
+}
+.hss-item{flex:1;padding:14px 10px;text-align:center;border-right:1px solid var(--border)}
+.hss-item:last-child{border-right:none}
+.hss-val{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--cyan);margin-bottom:4px}
+.hss-lbl{font-size:10px;color:var(--text3)}
 
-/* ── Data state layout ── */
-.home-grid{display:grid;gap:14px}
+/* ─── ALGO CARDS ────────────────────────────────────────── */
+.section-label{
+  font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--red);margin-bottom:8px;
+}
+.section-title{font-size:18px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px}
+.section-sub{font-size:13px;color:var(--text2);margin-bottom:16px}
 
-/* Stat row */
-.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.algo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.algo-card{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:18px 16px;transition:all 0.2s;position:relative;overflow:hidden;
+}
+.algo-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--line-color,var(--cyan));opacity:0;transition:opacity 0.2s;
+}
+.algo-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.2)}
+.algo-card:hover::before{opacity:1}
+.algo-card-icon{
+  width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;margin-bottom:12px;
+  background:var(--ic-bg,var(--cyan-bg));border:1px solid var(--ic-bd,var(--cyan-bd));
+}
+.algo-card-name{font-size:13px;font-weight:700;margin-bottom:6px}
+.algo-card-desc{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:10px}
+.algo-card-foot{display:flex;align-items:center;justify-content:space-between}
+.algo-complexity{
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  padding:3px 8px;border-radius:4px;
+  background:var(--ic-bg,var(--cyan-bg));color:var(--ic-c,var(--cyan));
+  border:1px solid var(--ic-bd,var(--cyan-bd));
+}
+.algo-score{font-family:var(--mono);font-size:10px;color:var(--text3)}
+
+/* ─── PIPELINE ──────────────────────────────────────────── */
+.pipeline{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:20px 24px;margin-bottom:14px;
+}
+.pipeline-steps{display:flex;align-items:flex-start;gap:0;overflow-x:auto;padding-bottom:4px}
+.ps{flex:1;min-width:120px;text-align:center;position:relative}
+.ps:not(:last-child)::after{
+  content:'→';position:absolute;right:-10px;top:18px;
+  font-size:14px;color:var(--text3);font-weight:700;
+}
+.ps-num{
+  width:36px;height:36px;border-radius:50%;
+  font-family:var(--mono);font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 8px;
+  background:var(--card2);border:1px solid var(--border);color:var(--text2);
+  transition:all 0.2s;
+}
+.ps:hover .ps-num{background:var(--red-bg);border-color:var(--red-bd);color:var(--red)}
+.ps-label{font-size:11px;font-weight:600;color:var(--text1);margin-bottom:3px}
+.ps-sub{font-size:10px;color:var(--text3)}
+
+/* ─── DATA STATE ─────────────────────────────────────────── */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
 .stat-card{
   background:var(--card);border:1px solid var(--border);border-radius:12px;
-  padding:16px 16px 14px;display:flex;flex-direction:column;gap:0;
-  position:relative;overflow:hidden;transition:border-color 0.2s;
+  padding:16px;position:relative;overflow:hidden;transition:border-color 0.2s;
 }
 .stat-card:hover{border-color:var(--border2)}
-.stat-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;
+.stat-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:12px 12px 0 0;
+  background:var(--sc-color,var(--cyan));
 }
-.stat-card.red::before{background:linear-gradient(90deg,var(--red),rgba(239,68,68,0))}
-.stat-card.amber::before{background:linear-gradient(90deg,var(--amber),rgba(245,158,11,0))}
-.stat-card.cyan::before{background:linear-gradient(90deg,var(--cyan),rgba(6,182,212,0))}
-.stat-card.green::before{background:linear-gradient(90deg,var(--green),rgba(16,185,129,0))}
-.stat-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
-.stat-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.stat-icon.red  {background:var(--red-bg);border:1px solid var(--red-bd)}
-.stat-icon.amber{background:var(--amber-bg);border:1px solid var(--amber-bd)}
-.stat-icon.cyan {background:var(--cyan-bg);border:1px solid var(--cyan-bd)}
-.stat-icon.green{background:var(--green-bg);border:1px solid var(--green-bd)}
-.stat-val{font-family:var(--mono);font-size:30px;font-weight:700;line-height:1;margin-bottom:5px}
-.stat-lbl{font-size:12px;color:var(--text2);margin-bottom:3px}
-.stat-sub{font-family:var(--mono);font-size:10px;color:var(--text3)}
+.stat-top{display:flex;align-items:flex-start;justify-content:space-between}
+.stat-icon{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;
+  background:var(--si-bg);border:1px solid var(--si-bd);
+}
+.stat-val{font-family:var(--mono);font-size:28px;font-weight:700;line-height:1;margin:10px 0 4px}
+.stat-lbl{font-size:12px;color:var(--text2)}
+.stat-sub{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:3px}
 
-/* Bottom row: 3 columns */
-.bottom-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px}
+/* Summary strip */
+.sum-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.sum-card{
+  background:var(--card2);border:1px solid var(--border);border-radius:9px;
+  padding:11px 14px;display:flex;align-items:center;gap:10px;
+}
+.sum-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sum-val{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--text1);line-height:1;margin-bottom:2px}
+.sum-lbl{font-size:10px;color:var(--text3)}
 
-/* Accounts card */
+/* Bottom grid */
+.bottom-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:14px}
+
+/* Account items */
 .acct-item{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 12px;border-radius:8px;
+  display:flex;align-items:center;gap:10px;
+  padding:9px 11px;border-radius:8px;
   border:1px solid var(--border);background:var(--card2);
-  margin-bottom:5px;cursor:pointer;transition:all 0.15s;gap:10px;
+  margin-bottom:5px;cursor:pointer;transition:all 0.15s;
 }
 .acct-item:last-child{margin-bottom:0}
-.acct-item:hover{border-color:var(--border2);background:rgba(255,255,255,0.04)}
-.acct-rank{font-family:var(--mono);font-size:10px;color:var(--text3);width:16px;flex-shrink:0}
+.acct-item:hover{border-color:var(--red-bd);background:var(--red-bg)}
+.acct-rank{font-family:var(--mono);font-size:10px;color:var(--text3);width:18px;flex-shrink:0;text-align:right}
 .acct-info{flex:1;min-width:0}
 .acct-id{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .acct-pats{font-size:10px;color:var(--text3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.acct-score{font-family:var(--mono);font-size:13px;font-weight:700;flex-shrink:0}
+.acct-bar{height:3px;background:var(--card);border-radius:2px;overflow:hidden;margin-top:5px}
+.acct-bar-fill{height:100%;border-radius:2px}
+.acct-score{font-family:var(--mono);font-size:14px;font-weight:700;flex-shrink:0}
 
-/* Score bar in account row */
-.score-bar-wrap{display:flex;align-items:center;gap:6px;margin-top:6px}
-.score-bar-track{flex:1;height:3px;background:var(--card2);border-radius:2px;overflow:hidden}
-.score-bar-fill{height:100%;border-radius:2px}
-
-/* Ring breakdown card */
+/* Ring breakdown */
 .rb-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
-.rb-item:last-child{border-bottom:none}
-.rb-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.rb-item:last-child{border-bottom:none;padding-bottom:0}
+.rb-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
 .rb-info{flex:1;min-width:0}
 .rb-name{font-size:12px;font-weight:500;color:var(--text1);margin-bottom:4px}
 .rb-track{height:4px;background:var(--card2);border-radius:2px;overflow:hidden}
 .rb-fill{height:100%;border-radius:2px;transition:width 0.9s cubic-bezier(0.4,0,0.2,1)}
-.rb-count{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text1);flex-shrink:0;width:28px;text-align:right}
+.rb-count{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text1);flex-shrink:0;width:30px;text-align:right}
 
-/* Mini chart card */
-.chart-wrap{position:relative;height:160px}
+/* Mini chart */
+.chart-wrap{position:relative;height:158px}
 
-/* Summary row */
-.summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.sum-item{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px}
-.sum-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.sum-info{}
-.sum-val{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text1);line-height:1;margin-bottom:3px}
-.sum-lbl{font-size:10px;color:var(--text3)}
+/* Card header util */
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-hdr-link{font-family:var(--mono);font-size:10px;color:var(--cyan);text-decoration:none;transition:opacity 0.15s}
+.card-hdr-link:hover{opacity:0.7}
 
-/* Empty state */
-.empty-state{padding:28px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3);line-height:2}
-
-/* Responsive */
-@media(max-width:1024px){.bottom-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:900px){.stat-row{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.bottom-grid{grid-template-columns:1fr}.summary-row{grid-template-columns:1fr 1fr}}
-@media(max-width:480px){.stat-row{grid-template-columns:1fr 1fr}.hero-stats{gap:18px}}
+/* ─── RESPONSIVE ─────────────────────────────────────────── */
+@media(max-width:1100px){.algo-grid{grid-template-columns:1fr 1fr}.bottom-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.stat-row{grid-template-columns:1fr 1fr}.sum-strip{grid-template-columns:1fr 1fr}.pipeline-steps{gap:4px}}
+@media(max-width:640px){.bottom-grid{grid-template-columns:1fr}.algo-grid{grid-template-columns:1fr 1fr}.hero-stats-strip{flex-wrap:wrap}.hss-item{min-width:50%;border-bottom:1px solid var(--border)}}
+@media(max-width:480px){.stat-row{grid-template-columns:1fr 1fr}.algo-grid{grid-template-columns:1fr}}
 {% endblock %}
 
 {% block content %}
 <div class="page-wrap">
 
-  <!-- ── HEADER ── -->
+  <!-- Page header -->
   <div class="page-header">
     <div class="page-title"><span class="page-title-icon">📡</span> Overview</div>
     <a href="/analyze" class="btn btn-red">↑ New Analysis</a>
   </div>
 
-  <!-- ── HERO (shown when no data) ── -->
-  <div id="hero-section">
-    <div class="hero">
-      <div class="hero-eyebrow">
-        <div class="hero-dot"></div>
-        Graph Intelligence · Financial Crime Detection
-      </div>
-      <h1>Detect Money Muling<br/>with <em>Graph Theory</em></h1>
-      <p class="hero-sub">Upload transaction CSV data and our engine detects fraud rings, smurfing behaviour, and layered shell networks in seconds.</p>
-      <div class="hero-actions">
-        <a href="/analyze" class="btn btn-red" style="font-size:13px;padding:11px 22px">↑ Upload CSV &amp; Analyze</a>
-        <a href="/dashboard" class="btn btn-ghost" style="font-size:13px;padding:11px 22px">View Dashboard</a>
-      </div>
-      <div class="hero-stats">
-        <div class="hst"><div class="hst-val">O(V+E)</div><div class="hst-lbl">Core Complexity</div></div>
-        <div class="hst"><div class="hst-val">&lt;30s</div><div class="hst-lbl">10K Transactions</div></div>
-        <div class="hst"><div class="hst-val">4</div><div class="hst-lbl">Detection Patterns</div></div>
-        <div class="hst"><div class="hst-val">0–100</div><div class="hst-lbl">Suspicion Score</div></div>
-      </div>
+  <!-- ═══ HERO (always visible) ═══ -->
+  <div class="hero">
+    <div class="hero-pill">
+      <div class="hero-pill-dot"></div>
+      Graph Intelligence · Financial Crime Detection
+    </div>
+    <h1>Detect Money Muling<br/>with <em>Graph Theory</em></h1>
+    <p class="hero-desc">
+      Upload transaction CSV data and our graph-theoretic engine detects
+      fraud rings, smurfing behaviour, and layered shell networks — in seconds.
+    </p>
+    <div class="hero-btns">
+      <a href="/analyze" class="btn btn-red" style="font-size:13px;padding:11px 24px">↑ Upload CSV &amp; Analyze</a>
+      <a href="/dashboard" class="btn btn-ghost" style="font-size:13px;padding:11px 24px">View Dashboard</a>
+    </div>
+    <div class="hero-stats-strip">
+      <div class="hss-item"><div class="hss-val">O(V+E)</div><div class="hss-lbl">Core Complexity</div></div>
+      <div class="hss-item"><div class="hss-val">&lt;30s</div><div class="hss-lbl">10K Transactions</div></div>
+      <div class="hss-item"><div class="hss-val">4</div><div class="hss-lbl">Detection Algorithms</div></div>
+      <div class="hss-item"><div class="hss-val">0–100</div><div class="hss-lbl">Suspicion Score</div></div>
     </div>
   </div>
 
-  <!-- ── DATA STATE (hidden until data loaded) ── -->
+  <!-- ═══ DATA STATE (shown after analysis) ═══ -->
   <div id="data-section" style="display:none">
 
-    <!-- Stat row -->
-    <div class="stat-row" style="margin-bottom:14px">
-      <div class="stat-card red">
+    <!-- Stat cards -->
+    <div class="stat-row">
+      <div class="stat-card" style="--sc-color:var(--red)">
         <div class="stat-top">
-          <div>
-            <div class="stat-val" id="hs-sus" style="color:var(--red)">—</div>
-            <div class="stat-lbl">Suspicious Accounts</div>
-            <div class="stat-sub">score ≥ 40</div>
-          </div>
-          <div class="stat-icon red">🚨</div>
+          <div></div>
+          <div class="stat-icon" style="--si-bg:var(--red-bg);--si-bd:var(--red-bd)">🚨</div>
         </div>
+        <div class="stat-val" id="hs-sus" style="color:var(--red)">—</div>
+        <div class="stat-lbl">Suspicious Accounts</div>
+        <div class="stat-sub">score ≥ 40</div>
       </div>
-      <div class="stat-card amber">
+      <div class="stat-card" style="--sc-color:var(--amber)">
         <div class="stat-top">
-          <div>
-            <div class="stat-val" id="hs-rng" style="color:var(--amber)">—</div>
-            <div class="stat-lbl">Fraud Rings</div>
-            <div class="stat-sub">all pattern types</div>
-          </div>
-          <div class="stat-icon amber">⬡</div>
+          <div></div>
+          <div class="stat-icon" style="--si-bg:var(--amber-bg);--si-bd:var(--amber-bd)">⬡</div>
         </div>
+        <div class="stat-val" id="hs-rng" style="color:var(--amber)">—</div>
+        <div class="stat-lbl">Fraud Rings</div>
+        <div class="stat-sub">all pattern types</div>
       </div>
-      <div class="stat-card cyan">
+      <div class="stat-card" style="--sc-color:var(--cyan)">
         <div class="stat-top">
-          <div>
-            <div class="stat-val" id="hs-acc" style="color:var(--cyan)">—</div>
-            <div class="stat-lbl">Total Accounts</div>
-            <div class="stat-sub">in transaction graph</div>
-          </div>
-          <div class="stat-icon cyan">👤</div>
+          <div></div>
+          <div class="stat-icon" style="--si-bg:var(--cyan-bg);--si-bd:var(--cyan-bd)">👤</div>
         </div>
+        <div class="stat-val" id="hs-acc" style="color:var(--cyan)">—</div>
+        <div class="stat-lbl">Total Accounts</div>
+        <div class="stat-sub">in transaction graph</div>
       </div>
-      <div class="stat-card green">
+      <div class="stat-card" style="--sc-color:var(--green)">
         <div class="stat-top">
-          <div>
-            <div class="stat-val" id="hs-txn" style="color:var(--green)">—</div>
-            <div class="stat-lbl">Transactions</div>
-            <div class="stat-sub">analyzed</div>
-          </div>
-          <div class="stat-icon green">💳</div>
+          <div></div>
+          <div class="stat-icon" style="--si-bg:var(--green-bg);--si-bd:var(--green-bd)">💳</div>
         </div>
+        <div class="stat-val" id="hs-txn" style="color:var(--green)">—</div>
+        <div class="stat-lbl">Transactions</div>
+        <div class="stat-sub">analyzed in total</div>
       </div>
     </div>
 
-    <!-- Summary pills -->
-    <div class="summary-row" style="margin-bottom:14px">
-      <div class="sum-item">
-        <div class="sum-dot" style="background:var(--red)"></div>
-        <div class="sum-info">
-          <div class="sum-val" id="sum-high">—</div>
-          <div class="sum-lbl">High Risk (≥75)</div>
-        </div>
+    <!-- Summary strip -->
+    <div class="sum-strip">
+      <div class="sum-card">
+        <div class="sum-dot" style="background:var(--red);box-shadow:0 0 6px var(--red)"></div>
+        <div><div class="sum-val" id="sum-high">—</div><div class="sum-lbl">High Risk ≥75</div></div>
       </div>
-      <div class="sum-item">
-        <div class="sum-dot" style="background:var(--amber)"></div>
-        <div class="sum-info">
-          <div class="sum-val" id="sum-med">—</div>
-          <div class="sum-lbl">Medium Risk (40–74)</div>
-        </div>
+      <div class="sum-card">
+        <div class="sum-dot" style="background:var(--amber);box-shadow:0 0 6px var(--amber)"></div>
+        <div><div class="sum-val" id="sum-med">—</div><div class="sum-lbl">Medium Risk 40–74</div></div>
       </div>
-      <div class="sum-item">
-        <div class="sum-dot" style="background:var(--green)"></div>
-        <div class="sum-info">
-          <div class="sum-val" id="sum-time">—</div>
-          <div class="sum-lbl">Processing Time (s)</div>
-        </div>
+      <div class="sum-card">
+        <div class="sum-dot" style="background:var(--green);box-shadow:0 0 5px var(--green)"></div>
+        <div><div class="sum-val" id="sum-low">—</div><div class="sum-lbl">Low Risk &lt;40</div></div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-dot" style="background:var(--cyan)"></div>
+        <div><div class="sum-val" id="sum-time">—</div><div class="sum-lbl">Processing Time (s)</div></div>
       </div>
     </div>
 
     <!-- Bottom 3-col grid -->
-    <div class="bottom-grid">
-
-      <!-- Top suspicious accounts -->
+    <div class="bottom-grid" style="margin-bottom:14px">
       <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="card-hdr">
           <div class="card-title" style="margin-bottom:0">Top Suspicious Accounts</div>
-          <a href="/dashboard" style="font-family:var(--mono);font-size:10px;color:var(--cyan);text-decoration:none">View graph →</a>
+          <a href="/dashboard" class="card-hdr-link">View graph →</a>
         </div>
-        <div id="home-accounts">
-          <div class="empty-state">No data.</div>
-        </div>
+        <div id="home-accounts"><div style="padding:24px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3)">No data.</div></div>
       </div>
-
-      <!-- Ring breakdown -->
       <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="card-hdr">
           <div class="card-title" style="margin-bottom:0">Ring Breakdown</div>
-          <a href="/rings" style="font-family:var(--mono);font-size:10px;color:var(--cyan);text-decoration:none">All rings →</a>
+          <a href="/rings" class="card-hdr-link">All rings →</a>
         </div>
-        <div id="home-breakdown">
-          <div class="empty-state">No data.</div>
-        </div>
+        <div id="home-breakdown"><div style="padding:24px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3)">No data.</div></div>
       </div>
-
-      <!-- Score distribution mini chart -->
       <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="card-hdr">
           <div class="card-title" style="margin-bottom:0">Score Distribution</div>
-          <a href="/analytics" style="font-family:var(--mono);font-size:10px;color:var(--cyan);text-decoration:none">Full analytics →</a>
+          <a href="/analytics" class="card-hdr-link">Full analytics →</a>
         </div>
         <div class="chart-wrap"><canvas id="mini-chart"></canvas></div>
       </div>
+    </div>
 
+  </div>
+
+  <!-- ═══ ALGORITHM CARDS (always visible) ═══ -->
+  <div style="margin-bottom:14px">
+    <div style="margin-bottom:14px">
+      <div class="section-label">Detection Algorithms</div>
+      <div class="section-title">Four-Layer Fraud Detection</div>
+      <div class="section-sub">Each algorithm targets a distinct money laundering pattern, combined into one unified suspicion score.</div>
+    </div>
+    <div class="algo-grid">
+      <div class="algo-card" style="--line-color:#06b6d4;--ic-bg:rgba(6,182,212,0.1);--ic-bd:rgba(6,182,212,0.22);--ic-c:#06b6d4">
+        <div class="algo-card-icon" style="background:var(--ic-bg);border-color:var(--ic-bd)">🔄</div>
+        <div class="algo-card-name">Cycle Detection</div>
+        <div class="algo-card-desc">Detects circular fund routing (A→B→C→A) using Tarjan's Strongly Connected Components. An SCC of ≥3 nodes indicates a money loop.</div>
+        <div class="algo-card-foot">
+          <span class="algo-complexity" style="background:var(--ic-bg);color:var(--ic-c);border-color:var(--ic-bd)">O(V + E)</span>
+          <span class="algo-score">+35 score</span>
+        </div>
+      </div>
+      <div class="algo-card" style="--line-color:#ef4444;--ic-bg:rgba(239,68,68,0.1);--ic-bd:rgba(239,68,68,0.22);--ic-c:#ef4444">
+        <div class="algo-card-icon" style="background:var(--ic-bg);border-color:var(--ic-bd)">🐙</div>
+        <div class="algo-card-name">Smurfing Detection</div>
+        <div class="algo-card-desc">Fan-in (≥5 senders → 1 receiver) and fan-out (1 sender → ≥5 receivers) within a 72-hour sliding window.</div>
+        <div class="algo-card-foot">
+          <span class="algo-complexity" style="background:var(--ic-bg);color:var(--ic-c);border-color:var(--ic-bd)">O(T log T)</span>
+          <span class="algo-score">+25 score</span>
+        </div>
+      </div>
+      <div class="algo-card" style="--line-color:#f59e0b;--ic-bg:rgba(245,158,11,0.1);--ic-bd:rgba(245,158,11,0.22);--ic-c:#f59e0b">
+        <div class="algo-card-icon" style="background:var(--ic-bg);border-color:var(--ic-bd)">🧅</div>
+        <div class="algo-card-name">Layered Shell Networks</div>
+        <div class="algo-card-desc">BFS through 3+ hop chains via shell accounts with ≤3 total transactions. Detects obfuscation chains.</div>
+        <div class="algo-card-foot">
+          <span class="algo-complexity" style="background:var(--ic-bg);color:var(--ic-c);border-color:var(--ic-bd)">O(V + E)</span>
+          <span class="algo-score">+20 score</span>
+        </div>
+      </div>
+      <div class="algo-card" style="--line-color:#8b5cf6;--ic-bg:rgba(139,92,246,0.1);--ic-bd:rgba(139,92,246,0.22);--ic-c:#8b5cf6">
+        <div class="algo-card-icon" style="background:var(--ic-bg);border-color:var(--ic-bd)">🎯</div>
+        <div class="algo-card-name">Hub Node Analysis</div>
+        <div class="algo-card-desc">Flags accounts at the 95th percentile of combined degree. Legitimate merchants auto-whitelisted via diversity ratio.</div>
+        <div class="algo-card-foot">
+          <span class="algo-complexity" style="background:var(--ic-bg);color:var(--ic-c);border-color:var(--ic-bd)">O(V)</span>
+          <span class="algo-score">+20 score</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PIPELINE ═══ -->
+  <div class="pipeline">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div class="section-label" style="margin-bottom:4px">System Workflow</div>
+        <div style="font-size:14px;font-weight:600">How the engine processes your data</div>
+      </div>
+      <a href="/analyze" class="btn btn-red" style="font-size:11px;padding:8px 16px">Get Started →</a>
+    </div>
+    <div class="pipeline-steps">
+      <div class="ps">
+        <div class="ps-num">01</div>
+        <div class="ps-label">Upload CSV</div>
+        <div class="ps-sub">transaction data</div>
+      </div>
+      <div class="ps">
+        <div class="ps-num">02</div>
+        <div class="ps-label">Validate Schema</div>
+        <div class="ps-sub">5 required columns</div>
+      </div>
+      <div class="ps">
+        <div class="ps-num">03</div>
+        <div class="ps-label">Build Graph</div>
+        <div class="ps-sub">nodes + edges</div>
+      </div>
+      <div class="ps">
+        <div class="ps-num">04</div>
+        <div class="ps-label">Whitelist</div>
+        <div class="ps-sub">exclude merchants</div>
+      </div>
+      <div class="ps">
+        <div class="ps-num">05</div>
+        <div class="ps-label">4 Detectors</div>
+        <div class="ps-sub">run in parallel</div>
+      </div>
+      <div class="ps">
+        <div class="ps-num">06</div>
+        <div class="ps-label">Score Accounts</div>
+        <div class="ps-sub">0–100 per account</div>
+      </div>
+      <div class="ps">
+        <div class="ps-num">07</div>
+        <div class="ps-label">Visualise</div>
+        <div class="ps-sub">interactive graph</div>
+      </div>
     </div>
   </div>
 
@@ -273,83 +411,71 @@
 
   try{
     const raw = sessionStorage.getItem('riftResult');
-    if(!raw){
-      // Show hero only
-      document.getElementById('hero-section').style.display = 'block';
-      document.getElementById('data-section').style.display  = 'none';
-      return;
-    }
+    if(!raw) return;
 
     const d = JSON.parse(raw);
     const s = d.summary;
 
-    // Switch views
-    document.getElementById('hero-section').style.display = 'none';
-    document.getElementById('data-section').style.display  = 'block';
+    document.getElementById('data-section').style.display = 'block';
 
-    // Stat cards
+    /* Stat cards */
     document.getElementById('hs-sus').textContent = s.suspicious_accounts_flagged;
     document.getElementById('hs-rng').textContent = s.fraud_rings_detected;
     document.getElementById('hs-acc').textContent = s.total_accounts_analyzed;
     document.getElementById('hs-txn').textContent = s.total_transactions;
 
-    // Summary pills
+    /* Summary strip */
     const high = d.suspicious_accounts.filter(a=>a.suspicion_score>=75).length;
     const med  = d.suspicious_accounts.filter(a=>a.suspicion_score>=40&&a.suspicion_score<75).length;
+    const low  = d.suspicious_accounts.filter(a=>a.suspicion_score<40).length;
     document.getElementById('sum-high').textContent = high;
     document.getElementById('sum-med').textContent  = med;
+    document.getElementById('sum-low').textContent  = low;
     document.getElementById('sum-time').textContent = s.processing_time_seconds;
 
-    // Accounts list
+    /* Top accounts */
     const top = d.suspicious_accounts.slice(0,8);
     document.getElementById('home-accounts').innerHTML = top.length
       ? top.map((a,i)=>{
-          const c = nColor(a.suspicion_score);
-          const pct = a.suspicion_score.toFixed(0);
+          const c=nColor(a.suspicion_score), pct=a.suspicion_score.toFixed(0);
           return `<div class="acct-item" onclick="location.href='/dashboard'">
-            <span class="acct-rank">#${i+1}</span>
+            <span class="acct-rank">${i+1}</span>
             <div class="acct-info">
               <div class="acct-id">${a.account_id}</div>
               <div class="acct-pats">${(a.detected_patterns||[]).slice(0,2).join(', ')||'—'}</div>
-              <div class="score-bar-wrap">
-                <div class="score-bar-track"><div class="score-bar-fill" style="width:${pct}%;background:${c}"></div></div>
-              </div>
+              <div class="acct-bar"><div class="acct-bar-fill" style="width:${pct}%;background:${c}"></div></div>
             </div>
             <span class="acct-score" style="color:${c}">${pct}</span>
           </div>`;
         }).join('')
-      : '<div class="empty-state">No suspicious accounts.</div>';
+      : '<div style="padding:20px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3)">None detected.</div>';
 
-    // Ring breakdown
+    /* Ring breakdown */
     const maxR = Math.max(s.cycle_rings,s.smurfing_rings,s.layering_rings,s.hub_nodes,1);
-    const rbRows = [
-      {name:'Cycle Rings',    val:s.cycle_rings,    color:'#06b6d4', bg:'rgba(6,182,212,0.1)',   icon:'🔄'},
-      {name:'Smurfing',       val:s.smurfing_rings, color:'#ef4444', bg:'rgba(239,68,68,0.1)',   icon:'🐙'},
-      {name:'Layering',       val:s.layering_rings, color:'#f59e0b', bg:'rgba(245,158,11,0.1)',  icon:'🧅'},
-      {name:'Hub Nodes',      val:s.hub_nodes,      color:'#8b5cf6', bg:'rgba(139,92,246,0.1)',  icon:'🎯'},
-    ];
-    document.getElementById('home-breakdown').innerHTML = rbRows.map(r=>`
+    document.getElementById('home-breakdown').innerHTML = [
+      {name:'Cycle Rings',  val:s.cycle_rings,    color:'#06b6d4', bg:'rgba(6,182,212,0.1)',  icon:'🔄'},
+      {name:'Smurfing',     val:s.smurfing_rings, color:'#ef4444', bg:'rgba(239,68,68,0.1)',  icon:'🐙'},
+      {name:'Layering',     val:s.layering_rings, color:'#f59e0b', bg:'rgba(245,158,11,0.1)', icon:'🧅'},
+      {name:'Hub Nodes',    val:s.hub_nodes,      color:'#8b5cf6', bg:'rgba(139,92,246,0.1)', icon:'🎯'},
+    ].map(r=>`
       <div class="rb-item">
         <div class="rb-icon" style="background:${r.bg};border:1px solid ${r.color}33">${r.icon}</div>
         <div class="rb-info">
           <div class="rb-name">${r.name}</div>
-          <div class="rb-track"><div class="rb-fill" style="width:${(r.val/maxR*100).toFixed(1)}%;background:${r.color}"></div></div>
+          <div class="rb-track"><div class="rb-fill" style="width:${(r.val/maxR*100).toFixed(0)}%;background:${r.color}"></div></div>
         </div>
         <span class="rb-count">${r.val}</span>
       </div>`).join('');
 
-    // Mini score distribution chart
-    const buckets = ['0–10','10–20','20–30','30–40','40–50','50–60','60–70','70–80','80–90','90–100'];
-    const counts = new Array(10).fill(0);
+    /* Mini score chart */
+    const labels  = ['0–10','10–20','20–30','30–40','40–50','50–60','60–70','70–80','80–90','90–100'];
+    const counts  = new Array(10).fill(0);
     d.graph.nodes.forEach(n=>{ const i=Math.min(Math.floor((n.score||0)/10),9); counts[i]++; });
-    const bgColors = counts.map((_,i)=> i>=7 ? 'rgba(239,68,68,0.8)' : i>=4 ? 'rgba(245,158,11,0.7)' : 'rgba(42,58,85,0.7)');
+    const colors  = counts.map((_,i)=>i>=7?'rgba(239,68,68,0.85)':i>=4?'rgba(245,158,11,0.75)':'rgba(42,58,85,0.75)');
 
     new Chart(document.getElementById('mini-chart'),{
       type:'bar',
-      data:{
-        labels: buckets,
-        datasets:[{data:counts,backgroundColor:bgColors,borderRadius:4,borderSkipped:false}],
-      },
+      data:{labels,datasets:[{data:counts,backgroundColor:colors,borderRadius:3,borderSkipped:false}]},
       options:{
         responsive:true,maintainAspectRatio:false,
         plugins:{
@@ -358,11 +484,11 @@
             backgroundColor:'#1a1a24',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,
             titleColor:'#f0f4ff',bodyColor:'#8892a4',
             titleFont:{family:'JetBrains Mono',size:10},bodyFont:{family:'JetBrains Mono',size:10},
-            callbacks:{title:([t])=>`Score ${t.label}`, label:t=>`${t.raw} accounts`},
+            callbacks:{title:([t])=>`Score ${t.label}`,label:t=>`${t.raw} accounts`},
           },
         },
         scales:{
-          x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#444860',font:{family:'JetBrains Mono',size:9}}},
+          x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#444860',font:{family:'JetBrains Mono',size:8}}},
           y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#444860',font:{family:'JetBrains Mono',size:9}}},
         },
       },
